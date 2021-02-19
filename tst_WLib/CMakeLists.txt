@@ -1,0 +1,17 @@
+﻿# CMakeList.txt : CMake project for tst_WLib, include source and define
+# project specific logic here.
+#
+cmake_minimum_required (VERSION 3.8)
+
+
+file(GLOB tst_files "State_Machine/*.cpp")
+
+add_executable (tst_WLib "tst_WLib.cpp" "tst_WLib.h" ${tst_files})
+
+target_include_directories(tst_WLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+
+
+# TODO: Add tests and install targets if needed.
+target_link_libraries(tst_WLib LINK_PUBLIC WLib)
+
