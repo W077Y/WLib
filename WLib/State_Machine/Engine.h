@@ -75,7 +75,7 @@ namespace WLib::State_Machine::Factory_State_Machine
 
     virtual ~Engine() { this->m_fac.destroy_state(*this->m_cur); }
 
-    std::optional<Ev> tick()
+    std::optional<Ev> operator()()
     {
       std::optional<Ev> opt_evt = (*this->m_cur)();
 
@@ -90,10 +90,14 @@ namespace WLib::State_Machine::Factory_State_Machine
 
     bool handle_event(Ev const& event)
     {
-      if (this->search_in_table(event))
+      std::optional<Ev> opt_evt = this->m_cur->handle_event(event);
+      
+      if (!opt_evt.has_value())
         return true;
 
-      return this->m_cur->handle_event(event);
+      if (this->search_in_table(event))
+        return true;
+      return false;
     }
 
     St get_state() const noexcept { return this->m_cur->get_state(); }

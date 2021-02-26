@@ -13,9 +13,9 @@ TEST_CASE("State_Base")
   REQUIRE(state_A.get_state() == States::A);
   REQUIRE(state_B.get_state() == States::B);
 
-  REQUIRE_FALSE(state_A.handle_event(Events::a));
-  REQUIRE_FALSE(state_A.handle_event(Events::b));
-  REQUIRE_FALSE(state_A.handle_event(Events::c));
+  REQUIRE(state_A.handle_event(Events::a).value() == Events::a);
+  REQUIRE(state_A.handle_event(Events::b).value() == Events::b);
+  REQUIRE(state_A.handle_event(Events::c).value() == Events::c);
 
   REQUIRE_FALSE(state_A().has_value());
 }

@@ -11,6 +11,7 @@ enum class Events
 {
   a,
   b,
-  c
+  c,
+  d
 };
 
