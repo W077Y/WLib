@@ -23,7 +23,7 @@ namespace WLib::State_Machine::Factory_State_Machine
     virtual ~State_Base() = default;
 
     virtual std::optional<Ev> operator()() { return {}; };
-    virtual bool              handle_event(Ev const&) { return false; };
+    virtual std::optional<Ev> handle_event(Ev const& evt) { return evt; };
     virtual St                get_state() const noexcept { return this->m_state; }
                               operator St() const noexcept { return this->get_state(); }
   };

@@ -81,7 +81,7 @@ class tst_StateMachineClass
 
 public:
   States get_state() { return this->m_engine.get_state(); }
-  void   tick() { this->m_engine.tick(); }
+  void   tick() { this->m_engine(); }
   void   handle_event(Events const& event) { this->m_engine.handle_event(event); }
 };
 

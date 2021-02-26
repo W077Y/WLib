@@ -48,14 +48,14 @@ public:
     return {};
   }
 
-  virtual bool handle_event(Events const& event) override
+  virtual std::optional<Events> handle_event(Events const& event) override
   {
     this->m_counter.handle++;
 
     if (event == Events::c)
-      return true;
+      return {};
 
-    return false;
+    return event;
   }
 };
 
@@ -114,7 +114,7 @@ TEST_CASE("tst_engine")
   constexpr transition_t tab[] = {
     { States::A, Events::a, States::B },
     { States::B, Events::b, States::C },
-    { Events::c, States::A },
+    { Events::d, States::A },
   };
 
   placement_new_factory fac(count_A, count_B, count_C);
@@ -129,9 +129,9 @@ TEST_CASE("tst_engine")
     REQUIRE(count_C == tst_counter{ 0, 0, 0, 0 });
 
     for (std::size_t i = 0; i < 10; i++)
-      REQUIRE_FALSE(engine.tick().has_value());
+      REQUIRE_FALSE(engine().has_value());
 
-    std::optional<Events> opt_evt = engine.tick();
+    std::optional<Events> opt_evt = engine();
 
     REQUIRE(opt_evt.has_value());
     REQUIRE(opt_evt.value() == Events::b);
@@ -156,34 +156,34 @@ TEST_CASE("tst_engine")
     REQUIRE(engine.handle_event(Events::a));
     REQUIRE(engine.get_state() == States::B);
 
-    REQUIRE(count_A == tst_counter{ 1, 11, 1, 2 });
+    REQUIRE(count_A == tst_counter{ 1, 11, 1, 3 });
     REQUIRE(count_B == tst_counter{ 1, 0, 0, 0 });
     REQUIRE(count_C == tst_counter{ 0, 0, 0, 0 });
 
     REQUIRE(engine.get_state() == States::B);
     for (std::size_t i = 0; i < 10; i++)
-      REQUIRE_FALSE(engine.tick().has_value());
+      REQUIRE_FALSE(engine().has_value());
     REQUIRE(engine.get_state() == States::B);
-    REQUIRE_FALSE(engine.tick().has_value());
+    REQUIRE_FALSE(engine().has_value());
     REQUIRE(engine.get_state() == States::C);
 
-    REQUIRE(count_A == tst_counter{ 1, 11, 1, 2 });
+    REQUIRE(count_A == tst_counter{ 1, 11, 1, 3 });
     REQUIRE(count_B == tst_counter{ 1, 11, 1, 0 });
     REQUIRE(count_C == tst_counter{ 1, 0, 0, 0 });
 
-    engine.tick();
-    engine.tick();
-    engine.tick();
+    engine();
+    engine();
+    engine();
     REQUIRE(engine.get_state() == States::C);
-    engine.handle_event(Events::c);
+    engine.handle_event(Events::d);
     REQUIRE(engine.get_state() == States::A);
 
-    REQUIRE(count_A == tst_counter{ 2, 11, 1, 2 });
+    REQUIRE(count_A == tst_counter{ 2, 11, 1, 3 });
     REQUIRE(count_B == tst_counter{ 1, 11, 1, 0 });
-    REQUIRE(count_C == tst_counter{ 1, 3, 1, 0 });
+    REQUIRE(count_C == tst_counter{ 1, 3, 1, 1 });
   }
 
-  REQUIRE(count_A == tst_counter{ 2, 11, 2, 2 });
+  REQUIRE(count_A == tst_counter{ 2, 11, 2, 3 });
   REQUIRE(count_B == tst_counter{ 1, 11, 1, 0 });
-  REQUIRE(count_C == tst_counter{ 1, 3, 1, 0 });
+  REQUIRE(count_C == tst_counter{ 1, 3, 1, 1 });
 }
