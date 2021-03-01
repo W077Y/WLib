@@ -140,20 +140,20 @@ TEST_CASE("tst_engine")
     REQUIRE(count_B == tst_counter{ 0, 0, 0, 0 });
     REQUIRE(count_C == tst_counter{ 0, 0, 0, 0 });
 
-    REQUIRE_FALSE(engine.handle_event(Events::b));
+    REQUIRE(engine.handle_event(Events::b).value() == Events::b);
 
     REQUIRE(count_A == tst_counter{ 1, 11, 0, 1 });
     REQUIRE(count_B == tst_counter{ 0, 0, 0, 0 });
     REQUIRE(count_C == tst_counter{ 0, 0, 0, 0 });
 
-    REQUIRE(engine.handle_event(Events::c));
+    REQUIRE_FALSE(engine.handle_event(Events::c).has_value());
 
     REQUIRE(count_A == tst_counter{ 1, 11, 0, 2 });
     REQUIRE(count_B == tst_counter{ 0, 0, 0, 0 });
     REQUIRE(count_C == tst_counter{ 0, 0, 0, 0 });
 
     REQUIRE(engine.get_state() == States::A);
-    REQUIRE(engine.handle_event(Events::a));
+    REQUIRE_FALSE(engine.handle_event(Events::a).has_value());
     REQUIRE(engine.get_state() == States::B);
 
     REQUIRE(count_A == tst_counter{ 1, 11, 1, 3 });

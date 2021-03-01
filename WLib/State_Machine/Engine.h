@@ -38,7 +38,7 @@ namespace WLib::State_Machine::Factory_State_Machine
     std::size_t                      m_len = 0;
     State_Factory_Interface<St, Ev>& m_fac;
 
-    bool search_in_table(Ev const& event)
+    std::optional<Ev> search_in_table(Ev const& event)
     {
       for (std::size_t i = 0; i < this->m_len; i++)
       {
@@ -47,10 +47,10 @@ namespace WLib::State_Machine::Factory_State_Machine
         {
           this->m_fac.destroy_state(*this->m_cur);
           this->m_cur = &this->m_fac.create_state(next.value());
-          return true;
+          return {};
         }
       }
-      return false;
+      return event;
     }
 
   public:
@@ -82,22 +82,16 @@ namespace WLib::State_Machine::Factory_State_Machine
       if (!opt_evt.has_value())
         return {};
 
-      if (this->search_in_table(opt_evt.value()))
-        return {};
-
-      return opt_evt;
+      return this->search_in_table(opt_evt.value());
     }
 
-    bool handle_event(Ev const& event)
+    std::optional<Ev> handle_event(Ev const& event)
     {
       std::optional<Ev> opt_evt = this->m_cur->handle_event(event);
-      
       if (!opt_evt.has_value())
-        return true;
+        return {};
 
-      if (this->search_in_table(event))
-        return true;
-      return false;
+      return this->search_in_table(event);
     }
 
     St get_state() const noexcept { return this->m_cur->get_state(); }
