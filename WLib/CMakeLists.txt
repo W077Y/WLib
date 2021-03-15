@@ -4,10 +4,11 @@
 cmake_minimum_required (VERSION 3.8)
 
 
-file(GLOB header_files "State_Machine/*.h")
+file(GLOB header_files "State_Machine/*.h"  "CRC/*.h")
+file(GLOB source_files "State_Machine/*.cpp" "CRC/*.cpp")
 
 # Add source to this project's executable.
-add_library(WLib STATIC "WLib.cpp" ${header_files})
+add_library(WLib STATIC "WLib.cpp" ${header_files} ${source_files})
 
 target_compile_features(WLib PUBLIC cxx_std_17)
 

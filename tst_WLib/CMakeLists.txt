@@ -4,7 +4,7 @@
 cmake_minimum_required (VERSION 3.8)
 
 
-file(GLOB tst_files "State_Machine/*.cpp")
+file(GLOB tst_files "State_Machine/*.cpp" "CRC/*.cpp")
 
 add_executable (tst_WLib "tst_WLib.cpp" "tst_WLib.h" ${tst_files})
 
