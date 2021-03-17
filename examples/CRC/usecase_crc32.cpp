@@ -1,5 +1,3 @@
-
-
 #include <CRC/crc32.h>
 
 int main()

@@ -1,5 +1,3 @@
-
-
 #include <CRC/crc16_ccitt_false.h>
 
 int main()

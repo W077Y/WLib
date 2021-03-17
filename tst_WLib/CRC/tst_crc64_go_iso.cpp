@@ -1,0 +1,27 @@
+#include <CRC/crc64_go_iso.h>
+#include <catch.hpp>
+
+TEST_CASE("tst_crc64_go_iso")
+{
+  char tst_str[] = {
+    0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
+  };
+
+  uint64_t crc = WLib::CRC::crc64_go_iso(reinterpret_cast<std::byte const*>(tst_str), std::size(tst_str));
+  REQUIRE((crc) == 0xB90956C775A41001);
+
+  crc = WLib::CRC::crc64_go_iso(reinterpret_cast<std::byte const*>(tst_str) + 0, 1);
+  crc = WLib::CRC::crc64_go_iso(crc, reinterpret_cast<std::byte const*>(tst_str) + 1, 2);
+  crc = WLib::CRC::crc64_go_iso(crc, reinterpret_cast<std::byte const*>(tst_str) + 3, 6);
+  REQUIRE((crc) == 0xB90956C775A41001);
+}
+
+
+TEST_CASE("tst_crc64_go_iso string")
+{
+  char tst_str[] = "This is a test string";
+
+  uint64_t crc =
+      WLib::CRC::crc64_go_iso(reinterpret_cast<std::byte const*>(tst_str), std::size(tst_str) - 1);
+  REQUIRE((crc) == 0x92737A60F502C7B5);
+}

@@ -20,7 +20,7 @@ TEST_CASE("tst_crc16-ccitt string")
 {
   char tst_str[] = "This is a test string";
 
-  uint32_t crc =
+  uint16_t crc =
       WLib::CRC::crc16_ccitt_false(reinterpret_cast<std::byte const*>(tst_str), std::size(tst_str) - 1);
   REQUIRE((crc) == 0x21D5);
 }
