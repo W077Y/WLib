@@ -3,10 +3,7 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
-project(WLib)
 
+add_subdirectory("./CRC")
 
-add_subdirectory("./WLib")
-add_subdirectory("./tst_WLib")
-add_subdirectory("./examples")
 

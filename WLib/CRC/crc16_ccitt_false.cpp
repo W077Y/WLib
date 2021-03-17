@@ -1,8 +1,8 @@
-#include <CRC/crc16_ccitt.h>
+#include <CRC/crc16_ccitt_false.h>
 
 namespace WLib::CRC
 {
-  constexpr uint32_t crc16_ccitt_table[256] = {
+  constexpr uint16_t crc16_ccitt_table[256] = {
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7, 0x8108, 0x9129, 0xA14A, 0xB16B,
     0xC18C, 0xD1AD, 0xE1CE, 0xF1EF, 0x1231, 0x0210, 0x3273, 0x2252, 0x52B5, 0x4294, 0x72F7, 0x62D6,
     0x9339, 0x8318, 0xB37B, 0xA35A, 0xD3BD, 0xC39C, 0xF3FF, 0xE3DE, 0x2462, 0x3443, 0x0420, 0x1401,
@@ -27,7 +27,7 @@ namespace WLib::CRC
     0x2E93, 0x3EB2, 0x0ED1, 0x1EF0,
   };
 
-  uint16_t crc16_ccitt(uint16_t const& init_value, std::byte const* beg, std::byte const* end)
+  uint16_t crc16_ccitt_false(uint16_t const& init_value, std::byte const* beg, std::byte const* end)
   {
     uint16_t crc = init_value;
     while (beg < end)
@@ -41,19 +41,19 @@ namespace WLib::CRC
     return crc;
   }
 
-  uint16_t crc16_ccitt(uint16_t const& init_value, std::byte const* beg, std::size_t const& len)
+  uint16_t crc16_ccitt_false(uint16_t const& init_value, std::byte const* beg, std::size_t const& len)
   {
-    return crc16_ccitt(init_value, beg, beg + len);
+    return crc16_ccitt_false(init_value, beg, beg + len);
   }
 
-  uint16_t crc16_ccitt(std::byte const* beg, std::byte const* end)
+  uint16_t crc16_ccitt_false(std::byte const* beg, std::byte const* end)
   {
-    return crc16_ccitt(0xFFFF, beg, end);
+    return crc16_ccitt_false(0xFFFF, beg, end);
   }
 
-  uint16_t crc16_ccitt(std::byte const* beg, std::size_t const& len)
+  uint16_t crc16_ccitt_false(std::byte const* beg, std::size_t const& len)
   {
-    return crc16_ccitt(0xFFFF, beg, len);
+    return crc16_ccitt_false(0xFFFF, beg, len);
   }
 
 }    // namespace WLib::CRC

@@ -11,3 +11,6 @@
 
 # test
 !tst_WLib/
+
+# examples
+!examples/
