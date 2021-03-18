@@ -32,33 +32,19 @@ namespace WLib::CRC
     };
   }
 
-  uint16_t crc16_ccitt_false(uint16_t const& init_value, std::byte const* beg, std::byte const* end)
+  void CRC_16_ccitt_false::reset() noexcept { this->m_crc = CRC_16_ccitt_false::init_value; }
+  CRC_16_ccitt_false::used_type CRC_16_ccitt_false::get() const noexcept { return this->m_crc; }
+  CRC_16_ccitt_false::used_type CRC_16_ccitt_false::operator()(std::byte const* beg,
+                                                               std::byte const* end) noexcept
   {
-    uint16_t crc = init_value;
     while (beg < end)
     {
-      crc = static_cast<uint16_t>(
-          (crc << 8) ^
-          table[static_cast<uint8_t>(((crc >> 8) & 0xFF) ^ static_cast<uint8_t>(*beg))]);
+      this->m_crc = static_cast<uint16_t>(
+          (this->m_crc << 8) ^
+          table[static_cast<uint8_t>(((this->m_crc >> 8) & 0xFF) ^ static_cast<uint8_t>(*beg))]);
       ++beg;
     }
 
-    return crc;
-  }
-
-  uint16_t
-  crc16_ccitt_false(uint16_t const& init_value, std::byte const* beg, std::size_t const& len)
-  {
-    return crc16_ccitt_false(init_value, beg, beg + len);
-  }
-
-  uint16_t crc16_ccitt_false(std::byte const* beg, std::byte const* end)
-  {
-    return crc16_ccitt_false(0xFFFF, beg, end);
-  }
-
-  uint16_t crc16_ccitt_false(std::byte const* beg, std::size_t const& len)
-  {
-    return crc16_ccitt_false(0xFFFF, beg, len);
+    return this->get();
   }
 }    // namespace WLib::CRC

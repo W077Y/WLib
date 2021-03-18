@@ -72,33 +72,19 @@ namespace WLib::CRC
     };
   }
 
-  uint64_t crc64_go_iso(uint64_t const& init_value, std::byte const* beg, std::byte const* end)
+  void CRC_64_go_iso::reset() noexcept { this->m_crc = CRC_64_go_iso::init_value; }
+  CRC_64_go_iso::used_type CRC_64_go_iso::get() const noexcept { return this->m_crc ^ 0xFFFF'FFFF'FFFF'FFFF; }
+  CRC_64_go_iso::used_type CRC_64_go_iso::operator()(std::byte const* beg,
+                                                     std::byte const* end) noexcept
   {
-    uint64_t crc = init_value ^ 0xFFFF'FFFF'FFFF'FFFF;
     while (beg < end)
     {
-      crc = static_cast<uint64_t>(
-          ((crc >> 8) & 0xFFFF'FFFF'FFFF'FF) ^
-          table[static_cast<uint8_t>((crc & 0xFF) ^ static_cast<uint8_t>(*beg))]);
+      this->m_crc = static_cast<uint64_t>(
+          ((this->m_crc >> 8) & 0xFFFF'FFFF'FFFF'FF) ^
+          table[static_cast<uint8_t>((this->m_crc & 0xFF) ^ static_cast<uint8_t>(*beg))]);
       ++beg;
     }
 
-    return crc ^ 0xFFFF'FFFF'FFFF'FFFF;
+    return this->get();
   }
-
-  uint64_t crc64_go_iso(uint64_t const& init_value, std::byte const* beg, std::size_t const& len)
-  {
-    return crc64_go_iso(init_value, beg, beg + len);
-  }
-
-  uint64_t crc64_go_iso(std::byte const* beg, std::byte const* end)
-  {
-    return crc64_go_iso(0, beg, end);
-  }
-
-  uint64_t crc64_go_iso(std::byte const* beg, std::size_t const& len)
-  {
-    return crc64_go_iso(0, beg, len);
-  }
-
-}    // namespace WLib::CRC6
+}    // namespace WLib::CRC

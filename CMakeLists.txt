@@ -7,6 +7,6 @@ project(WLib)
 
 include(CTest)
 add_subdirectory("./WLib")
-add_subdirectory("./tst_WLib")
 add_subdirectory("./examples")
+add_subdirectory("./tst_WLib")
 

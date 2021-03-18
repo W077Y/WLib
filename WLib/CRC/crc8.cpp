@@ -26,11 +26,10 @@ namespace WLib::CRC
     };
   }
 
-  void CRC_8::reset() noexcept { this->m_crc = CRC_8::init_value; }
-
-  uint8_t CRC_8::operator()(std::byte const* beg, std::byte const* end) noexcept
+  void             CRC_8::reset() noexcept { this->m_crc = CRC_8::init_value; }
+  CRC_8::used_type CRC_8::get() const noexcept { return this->m_crc; }
+  CRC_8::used_type CRC_8::operator()(std::byte const* beg, std::byte const* end) noexcept
   {
-
     while (beg < end)
     {
       this->m_crc = table[static_cast<uint8_t>(this->m_crc ^ static_cast<uint8_t>(*beg))];
@@ -39,31 +38,5 @@ namespace WLib::CRC
 
     return this->get();
   }
-  uint8_t CRC_8::operator()(std::byte const* beg, std::size_t const& len) noexcept
-  {
-    return this->operator()(beg, beg + len);
-  }
 
-  uint8_t CRC_8::get() const noexcept { return this->m_crc; }
-
-  uint8_t crc8(uint8_t const& init_value, std::byte const* beg, std::byte const* end)
-  {
-    uint8_t crc = init_value;
-    while (beg < end)
-    {
-      crc = table[static_cast<uint8_t>(crc ^ static_cast<uint8_t>(*beg))];
-      ++beg;
-    }
-
-    return crc;
-  }
-
-  uint8_t crc8(uint8_t const& init_value, std::byte const* beg, std::size_t const& len)
-  {
-    return crc8(init_value, beg, beg + len);
-  }
-
-  uint8_t crc8(std::byte const* beg, std::byte const* end) { return crc8(0x00, beg, end); }
-
-  uint8_t crc8(std::byte const* beg, std::size_t const& len) { return crc8(0x00, beg, len); }
 }    // namespace WLib::CRC

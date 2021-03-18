@@ -45,27 +45,18 @@ namespace WLib::CRC
     };
   }
 
-  uint32_t crc32(uint32_t const& init_value, std::byte const* beg, std::byte const* end)
+  void              CRC_32::reset() noexcept { this->m_crc = CRC_32::init_value; }
+  CRC_32::used_type CRC_32::get() const noexcept { return this->m_crc ^ 0xFFFF'FFFF; }
+  CRC_32::used_type CRC_32::operator()(std::byte const* beg, std::byte const* end) noexcept
   {
-    uint32_t crc = init_value ^ 0xFFFF'FFFF;
     while (beg < end)
     {
-      crc = static_cast<uint32_t>(
-          ((crc >> 8) & 0xFFFFFF) ^
-          table[static_cast<uint8_t>((crc & 0xFF) ^ static_cast<uint8_t>(*beg))]);
+      this->m_crc = static_cast<uint32_t>(
+          ((this->m_crc >> 8) & 0xFFFFFF) ^
+          table[static_cast<uint8_t>((this->m_crc & 0xFF) ^ static_cast<uint8_t>(*beg))]);
       ++beg;
     }
 
-    return crc ^ 0xFFFF'FFFF;
+    return this->get();
   }
-
-  uint32_t crc32(uint32_t const& init_value, std::byte const* beg, std::size_t const& len)
-  {
-    return crc32(init_value, beg, beg + len);
-  }
-
-  uint32_t crc32(std::byte const* beg, std::byte const* end) { return crc32(0, beg, end); }
-
-  uint32_t crc32(std::byte const* beg, std::size_t const& len) { return crc32(0, beg, len); }
-
 }    // namespace WLib::CRC

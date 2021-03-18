@@ -9,3 +9,8 @@ target_link_libraries(exa_usecase_crc32 LINK_PUBLIC WLib)
 
 add_executable(exa_usecase_crc16_ccitt_false "usecase_crc16_ccitt_false.cpp")
 target_link_libraries(exa_usecase_crc16_ccitt_false LINK_PUBLIC WLib)
+
+
+
+add_test(test_exa_usecase_crc32 exa_usecase_crc32)
+add_test(test_exa_usecase_crc16_ccitt_false exa_usecase_crc16_ccitt_false)
