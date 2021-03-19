@@ -1,7 +1,7 @@
 #pragma once
 
-#include <State_Machine/State_Base.h>
-#include <State_Machine/Transition.h>
+#include <State_Machine/state_Base.h>
+#include <State_Machine/transition.h>
 #include <cstdint>
 #include <optional>
 

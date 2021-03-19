@@ -20,10 +20,10 @@ namespace WLib::State_Machine::Factory_State_Machine
         : m_state(state)
     {
     }
-    virtual ~State_Base() = default;
+    virtual ~State_Base() noexcept = default;
 
-    virtual std::optional<Ev> operator()() { return {}; };
-    virtual std::optional<Ev> handle_event(Ev const& evt) { return evt; };
+    virtual std::optional<Ev> operator()() noexcept { return {}; };
+    virtual std::optional<Ev> handle_event(Ev const& evt) noexcept { return evt; };
     virtual St                get_state() const noexcept { return this->m_state; }
                               operator St() const noexcept { return this->get_state(); }
   };

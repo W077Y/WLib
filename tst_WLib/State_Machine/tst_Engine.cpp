@@ -1,6 +1,6 @@
 #include "tst_State_Machine_Base.h"
 
-#include <State_Machine/Engine.h>
+#include <State_Machine/engine.h>
 #include <catch.hpp>
 
 struct tst_counter
@@ -37,9 +37,9 @@ public:
   {
     this->m_counter.entry++;
   }
-  virtual ~tst_state_t() override { this->m_counter.exit++; }
+  virtual ~tst_state_t() noexcept override { this->m_counter.exit++; }
 
-  virtual std::optional<Events> operator()() override
+  virtual std::optional<Events> operator()() noexcept override
   {
     this->m_counter.state++;
 
@@ -48,7 +48,7 @@ public:
     return {};
   }
 
-  virtual std::optional<Events> handle_event(Events const& event) override
+  virtual std::optional<Events> handle_event(Events const& event) noexcept override
   {
     this->m_counter.handle++;
 
