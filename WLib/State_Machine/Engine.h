@@ -1,6 +1,6 @@
 #pragma once
 
-#include <State_Machine/state_Base.h>
+#include <State_Machine/state_base.h>
 #include <State_Machine/transition.h>
 #include <cstdint>
 #include <optional>
@@ -24,7 +24,6 @@ namespace WLib::State_Machine::Factory_State_Machine
     std::aligned_union_t<0, T...> m_mem = {};
 
   public:
-    virtual State_Base<St, Ev>& create_state(const St&) = 0;
     virtual void destroy_state(State_Base<St, Ev>& state) override { state.~State_Base(); };
   };
 

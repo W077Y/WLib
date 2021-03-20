@@ -92,7 +92,7 @@ namespace Implementation
     virtual ~measurement_state();
 
     virtual std::optional<Events> operator()() noexcept override;
-    virtual std::optional<Events> handle_event(Events const& evt) noexcept;
+    virtual std::optional<Events> handle_event(Events const& evt) noexcept override;
 
   private:
     std::optional<Interface::MeasModule_Interface::Errors>& m_error;
@@ -204,7 +204,6 @@ namespace Implementation
     float m_target_temperature = std::numeric_limits<float>::quiet_NaN();
     std::optional<Interface::MeasModule_Interface::Errors> m_errors = {};
     float m_measurement_result = std::numeric_limits<float>::quiet_NaN();
-    float (&m_meas_fuc)();
 
     factory                                                            m_fac;
     WLib::State_Machine::Factory_State_Machine::Engine<States, Events> m_engine;
@@ -500,8 +499,7 @@ std::optional<Implementation::Events> Implementation::error_state::operator()() 
 }
 
 Implementation::MeasurementModule::MeasurementModule(float (&meas_fuc)())
-    : m_meas_fuc(meas_fuc)
-    , m_fac(this->m_target_temperature, this->m_errors, this->m_measurement_result, meas_fuc)
+    : m_fac(this->m_target_temperature, this->m_errors, this->m_measurement_result, meas_fuc)
     , m_engine(this->m_table, this->m_fac, States::initializing)
 {
 }

@@ -1,12 +1,12 @@
 #include "tst_State_Machine_Base.h"
 
-#include <State_Machine/Engine.h>
+#include <State_Machine/engine.h>
 #include <catch.hpp>
 #include <functional>
 
 class tst_State_A: public WLib::State_Machine::Factory_State_Machine::State_Base<States, Events>
 {
-  char member[10] = {};
+  [[maybe_unused]] char member[10] = {};
 
 public:
   tst_State_A()
@@ -17,7 +17,7 @@ public:
 
 class tst_State_B: public WLib::State_Machine::Factory_State_Machine::State_Base<States, Events>
 {
-  char member[20] = {};
+  [[maybe_unused]] char member[20] = {};
 
 public:
   tst_State_B()
@@ -28,7 +28,7 @@ public:
 
 class tst_State_C: public WLib::State_Machine::Factory_State_Machine::State_Base<States, Events>
 {
-  char member[30] = {};
+  [[maybe_unused]] char member[30] = {};
 
 public:
   tst_State_C()

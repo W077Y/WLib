@@ -1,6 +1,6 @@
 #include "tst_State_Machine_Base.h"
 
-#include <State_Machine/State_Base.h>
+#include <State_Machine/state_base.h>
 
 #include <catch.hpp>
 
