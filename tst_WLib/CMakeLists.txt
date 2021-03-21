@@ -1,14 +1,28 @@
 ﻿# CMakeList.txt : CMake project for tst_WLib, include source and define
 # project specific logic here.
 #
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.15)
 
+add_executable (
+	tst_WLib
 
-file(GLOB tst_files "State_Machine/*.cpp" "CRC/*.cpp")
+	"tst_WLib.h"
+	"tst_WLib.cpp"
 
-add_executable (tst_WLib "tst_WLib.cpp" "tst_WLib.h" ${tst_files})
+	"CRC/tst_crc8.cpp"
+	"CRC/tst_crc16_ccitt_false.cpp"
+	"CRC/tst_crc32.cpp"
+	"CRC/tst_crc64_go_iso.cpp"
 
+	"State_Machine/tst_Engine.cpp"
+	"State_Machine/tst_State_Base.cpp"
+	"State_Machine/tst_Transition.cpp"
+	"State_Machine/tst_StateMachineClass.cpp"
+	)
 target_include_directories(tst_WLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+
+
 target_link_libraries(tst_WLib LINK_PUBLIC WLib)
 
 add_dependencies(tst_WLib WLib)
