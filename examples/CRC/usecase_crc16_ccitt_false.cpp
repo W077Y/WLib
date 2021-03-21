@@ -1,4 +1,4 @@
-#include <CRC/crc16_ccitt_false.h>
+#include <WLib_CRC.h>
 
 int main()
 {

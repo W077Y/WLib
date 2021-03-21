@@ -1,6 +1,6 @@
 #include "tst_State_Machine_Base.h"
 
-#include <State_Machine/transition.h>
+#include <WLib_State_Machine.h>
 #include <catch.hpp>
 
 

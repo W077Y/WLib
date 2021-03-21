@@ -1,4 +1,4 @@
-#include <CRC/crc8.h>
+#include <WLib_CRC.h>
 #include <catch.hpp>
 
 TEST_CASE("tst_crc8")

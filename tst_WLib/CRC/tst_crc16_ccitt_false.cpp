@@ -1,4 +1,4 @@
-#include <CRC/crc16_ccitt_false.h>
+#include <WLib_CRC.h>
 #include <catch.hpp>
 
 TEST_CASE("tst_crc16-ccitt")

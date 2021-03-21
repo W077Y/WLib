@@ -1,4 +1,4 @@
-#include <CRC/crc64_go_iso.h>
+#include <WLib_CRC.h>
 #include <catch.hpp>
 
 TEST_CASE("tst_crc64_go_iso")

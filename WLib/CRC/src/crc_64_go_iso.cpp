@@ -1,4 +1,4 @@
-#include <CRC/crc64_go_iso.h>
+#include "crc_64_go_iso.h"
 
 namespace WLib::CRC
 {

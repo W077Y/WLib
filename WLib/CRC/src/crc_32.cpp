@@ -1,4 +1,4 @@
-#include <CRC/crc32.h>
+#include "crc_32.h"
 
 namespace WLib::CRC
 {

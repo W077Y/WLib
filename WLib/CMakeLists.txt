@@ -1,18 +1,19 @@
 ﻿# CMakeList.txt : CMake project for tst_WLib, include source and define
 # project specific logic here.
 #
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.15)
 
 
-file(GLOB header_files "State_Machine/*.h"  "CRC/*.h")
-file(GLOB source_files "State_Machine/*.cpp" "CRC/*.cpp")
 
 # Add source to this project's executable.
-add_library(WLib STATIC "WLib.cpp" ${header_files} ${source_files})
+add_library(
+	WLib
+	STATIC
+	"WLib.cpp"
+	)
 
 target_compile_features(WLib PUBLIC cxx_std_17)
 
-target_include_directories(WLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(MSVC)
   string(REGEX REPLACE "/W[1-3]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -20,4 +21,10 @@ else()
   target_compile_options(WLib PUBLIC -Wall -Wextra -pedantic -Werror)
 endif()
 
-# TODO: Add tests and install targets if needed.
+
+add_subdirectory("CRC")
+add_subdirectory("State_Machine")
+
+
+target_link_libraries(WLib PUBLIC WLib_CRC)
+target_link_libraries(WLib PUBLIC WLib_State_Machine)
