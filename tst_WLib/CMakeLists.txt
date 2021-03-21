@@ -18,7 +18,7 @@ add_executable (
 	"State_Machine/tst_State_Base.cpp"
 	"State_Machine/tst_Transition.cpp"
 	"State_Machine/tst_StateMachineClass.cpp"
-	)
+	 "Serializer/tst_serializer.cpp")
 target_include_directories(tst_WLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 
