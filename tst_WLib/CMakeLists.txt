@@ -18,9 +18,19 @@ add_executable (
 	"State_Machine/tst_State_Base.cpp"
 	"State_Machine/tst_Transition.cpp"
 	"State_Machine/tst_StateMachineClass.cpp"
-	 "Serializer/tst_serializer.cpp")
+
+	"Serializer/tst_serializer.cpp")
 target_include_directories(tst_WLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+target_compile_features(tst_WLib PUBLIC cxx_std_17)
+if(MSVC)
+  string(REGEX REPLACE "/W[1-3]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  string(APPEND CMAKE_CXX_FLAGS " /W4")
+else()
+  target_compile_options(tst_WLib PUBLIC -Wall -Wextra -pedantic -Werror -O3)
+endif()
+
+MESSAGE(STATUS "Current CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
 
 
 target_link_libraries(tst_WLib LINK_PUBLIC WLib)

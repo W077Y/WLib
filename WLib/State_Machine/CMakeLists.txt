@@ -20,7 +20,7 @@ target_compile_features(WLib_State_Machine PUBLIC cxx_std_17)
 if(MSVC)
   string(REGEX REPLACE "/W[1-3]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 else()
-  target_compile_options(WLib_State_Machine PUBLIC -Wall -Wextra -pedantic -Werror)
+  target_compile_options(WLib_State_Machine PUBLIC -Wall -Wextra -pedantic -Werror -O3)
 endif()
 
 
