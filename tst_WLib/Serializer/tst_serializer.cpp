@@ -30,28 +30,28 @@ TEST_CASE("tst_serializer check a")
   REQUIRE(ser.get_byte_order() == WLib::byte_order_t::native);
 
   REQUIRE(ser.get_size() == 25);
-  REQUIRE(ser.get_number_of_free_bytes() == 25);
-  REQUIRE(ser.get_number_of_used_bytes() == 0);
+  REQUIRE(ser.get_free() == 25);
+  REQUIRE(ser.get_used() == 0);
 
-  ser(static_cast<uint16_t>(0xAABB));
+  ser.push_back(static_cast<uint16_t>(0xAABB));
 
   REQUIRE(ser.get_position() == &buf[2]);
   REQUIRE(ser.get_size() == 25);
-  REQUIRE(ser.get_number_of_free_bytes() == 23);
-  REQUIRE(ser.get_number_of_used_bytes() == 2);
+  REQUIRE(ser.get_free() == 23);
+  REQUIRE(ser.get_used() == 2);
 
-  ser(static_cast<int16_t>(0xCCDD));
+  ser.push_back(static_cast<int16_t>(0xCCDD));
   ser.set_byte_order(WLib::byte_order_t::big_endian);
-  ser(static_cast<int32_t>(0x0102'0304));
-  ser(static_cast<uint32_t>(0x0807'0605));
+  ser.push_back(static_cast<int32_t>(0x0102'0304));
+  ser.push_back(static_cast<uint32_t>(0x0807'0605));
 
   REQUIRE(ser.get_position() == &buf[12]);
   REQUIRE(ser.get_size() == 25);
-  REQUIRE(ser.get_number_of_free_bytes() == 13);
-  REQUIRE(ser.get_number_of_used_bytes() == 12);
+  REQUIRE(ser.get_free() == 13);
+  REQUIRE(ser.get_used() == 12);
 
-  REQUIRE(ser(static_cast<uint64_t>(0x0F0E'0D0C'0B0A'0908)) == 8);
-  REQUIRE(ser(static_cast<int64_t>(0x0706'0504'0302'0100)) == 5);
+  REQUIRE(ser.push_back(static_cast<uint64_t>(0x0F0E'0D0C'0B0A'0908)) == 8);
+  REQUIRE(ser.push_back(static_cast<int64_t>(0x0706'0504'0302'0100)) == 5);
 
   constexpr unsigned char ref_1[25] = { 0xBB, 0xAA, 0xDD, 0xCC, 0x01, 0x02, 0x03, 0x04, 0x08,
                                         0x07, 0x06, 0x05, 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A,
@@ -63,14 +63,14 @@ TEST_CASE("tst_serializer check a")
   ser.clear();
 
   REQUIRE(ser.get_size() == 25);
-  REQUIRE(ser.get_number_of_free_bytes() == 25);
-  REQUIRE(ser.get_number_of_used_bytes() == 0);
+  REQUIRE(ser.get_free() == 25);
+  REQUIRE(ser.get_used() == 0);
 
-  REQUIRE(ser(static_cast<int64_t>(0x0706'0504'0302'0100), 5) == 3);
+  REQUIRE(ser.push_back(static_cast<int64_t>(0x0706'0504'0302'0100), 5) == 3);
 
   REQUIRE(ser.get_size() == 25);
-  REQUIRE(ser.get_number_of_free_bytes() == 22);
-  REQUIRE(ser.get_number_of_used_bytes() == 3);
+  REQUIRE(ser.get_free() == 22);
+  REQUIRE(ser.get_used() == 3);
 
   constexpr char ref_2[3] = { 0x02, 0x01, 0x00 };
 
@@ -146,7 +146,7 @@ TEST_CASE("tst_deserializer check a")
   REQUIRE(ser.get_begin() == buf_1);
   REQUIRE(ser.get_end() == buf_1 + 25);
   REQUIRE(ser.get_position() == buf_1);
-  REQUIRE(ser.get_byte_order() == WLib::byte_order_t::native);
+  REQUIRE(ser.get_byte_order() == WLib::byte_order_t::big_endian);
 
   REQUIRE(ser.get_size() == 25);
   REQUIRE(ser.get_number_of_bytes_left() == 25);
@@ -154,7 +154,7 @@ TEST_CASE("tst_deserializer check a")
 
   WLib::deserializer_t ser_2(buf_2);
 
-  REQUIRE(ser_2(val_6, 5) == 3);
+  REQUIRE(ser_2(val_6, 5, WLib::byte_order_t::big_endian) == 3);
   REQUIRE(static_cast<int64_t>(0x0706'0504'0302'0100) == val_6);
 
 
@@ -243,13 +243,13 @@ TEST_CASE("tst_serializer my type")
   tmp_struct.a = -9;
   tmp_struct.b = 17;
 
-  ser(tmp_struct);
+  ser.push_back(tmp_struct);
   ser.set_byte_order(WLib::byte_order_t::little_endian);
-  ser(tmp_struct);
+  ser.push_back(tmp_struct);
 
   REQUIRE(ser.get_size() == 25);
-  REQUIRE(ser.get_number_of_free_bytes() == 7);
-  REQUIRE(ser.get_number_of_used_bytes() == 18);
+  REQUIRE(ser.get_free() == 7);
+  REQUIRE(ser.get_used() == 18);
 
   constexpr char ref_1[18] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, -9,
@@ -263,13 +263,13 @@ TEST_CASE("tst_serializer my type")
 
   my_type_class tmp_class;
 
-  ser(tmp_class);
+  ser.push_back(tmp_class);
   ser.set_byte_order(WLib::byte_order_t::big_endian);
-  ser(tmp_class);
+  ser.push_back(tmp_class);
 
   REQUIRE(ser.get_size() == 25);
-  REQUIRE(ser.get_number_of_free_bytes() == 7);
-  REQUIRE(ser.get_number_of_used_bytes() == 18);
+  REQUIRE(ser.get_free() == 7);
+  REQUIRE(ser.get_used() == 18);
 
   constexpr uint8_t ref_2[18] = {
     9,    0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -291,21 +291,21 @@ TEST_CASE("tst_serializer block_transfer")
 
   std::size_t len = 0;
 
-  len += ser(block, len);
+  len += ser.push_back(block, len);
   REQUIRE(len == 25);
 
   for (std::size_t i = 0; i < std::size(buf); i++)
     REQUIRE(buf[i] == block[i]);
 
   ser.clear();
-  len += ser(&block[0], std::size(block), len);
+  len += ser.push_back(&block[0], std::size(block), len);
 
   REQUIRE(len == 50);
   for (std::size_t i = 0; i < std::size(buf); i++)
     REQUIRE(buf[i] == block[i + 25]);
 
   ser.clear();
-  len += ser(block, len);
+  len += ser.push_back(block, len);
 
   REQUIRE(len == 60);
   for (std::size_t i = 0; i < 10; i++)
