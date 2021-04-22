@@ -23,9 +23,11 @@ endif()
 add_subdirectory("CRC")
 add_subdirectory("State_Machine")
 add_subdirectory("Serializer")
+add_subdirectory("ObserverPattern")
 
 
 
 target_link_libraries(WLib PUBLIC WLib_CRC)
 target_link_libraries(WLib PUBLIC WLib_State_Machine)
 target_link_libraries(WLib PUBLIC WLib_Serializer)
+target_link_libraries(WLib PUBLIC WLib_ObserverPattern)
