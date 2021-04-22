@@ -5,6 +5,7 @@
 !CMakeLists.txt
 !LICENSE
 !README.md
+!project-meta-info.in
 
 #Lib
 !WLib/

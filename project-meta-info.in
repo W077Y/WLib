@@ -1,0 +1,5 @@
+set( project_version 0.0.0)
+
+set( project_description "WLib")
+
+set ( project_homepage_url "?" )
