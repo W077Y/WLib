@@ -14,8 +14,8 @@ namespace WLib::State_Machine::Factory_State_Machine
   class State_Factory_Interface
   {
   public:
-    virtual State_Base<St, Ev>& create_state(const St&)            = 0;
-    virtual void                destroy_state(State_Base<St, Ev>&) = 0;
+    virtual State_Interface<St, Ev>& create_state(const St&)            = 0;
+    virtual void                     destroy_state(State_Interface<St, Ev>&) = 0;
   };
 
   template <typename St, typename Ev, typename... T>
@@ -25,7 +25,7 @@ namespace WLib::State_Machine::Factory_State_Machine
     std::aligned_union_t<0, T...> m_mem = {};
 
   public:
-    virtual void destroy_state(State_Base<St, Ev>& state) override { state.~State_Base(); };
+    virtual void destroy_state(State_Interface<St, Ev>& state) override { state.~State_Interface(); };
   };
 
   template <typename St,
@@ -33,7 +33,7 @@ namespace WLib::State_Machine::Factory_State_Machine
             typename = std::enable_if_t<std::is_enum_v<St> && std::is_enum_v<Ev>>>
   class Engine
   {
-    State_Base<St, Ev>*              m_cur = nullptr;
+    State_Interface<St, Ev>*         m_cur = nullptr;
     Transition<St, Ev> const*        m_tab = nullptr;
     std::size_t                      m_len = 0;
     State_Factory_Interface<St, Ev>& m_fac;

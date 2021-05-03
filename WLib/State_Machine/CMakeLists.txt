@@ -4,11 +4,9 @@
 cmake_minimum_required (VERSION 3.15)
 
 
-add_library(
-	WLib_State_Machine	STATIC
-	"inc/WLib_State_Machine.h"
-
-	"src/WLib_State_Machine.cpp")
+add_library(WLib_State_Machine	STATIC)
+target_sources(WLib_State_Machine
+	PRIVATE "src/WLib_State_Machine.cpp")
 
 target_include_directories(
 	WLib_State_Machine

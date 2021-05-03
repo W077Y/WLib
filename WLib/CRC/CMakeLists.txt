@@ -4,22 +4,18 @@
 cmake_minimum_required (VERSION 3.15)
 
 
-add_library(
-	WLib_CRC STATIC
-	"inc/WLib_CRC.h"
-	
-	"src/crc_16_ccitt_false.cpp"
-	"src/crc_32.cpp"
-	"src/crc_64_go_iso.cpp"
-	"src/crc_8.cpp"	)
-
+add_library(WLib_CRC	STATIC)
+target_sources(WLib_CRC
+	PRIVATE "src/crc_8.cpp"
+	PRIVATE "src/crc_16_ccitt_false.cpp"
+	PRIVATE "src/crc_32.cpp"
+	PRIVATE "src/crc_64_go_iso.cpp"
+	)
 
 target_include_directories(
 	WLib_CRC
 	PUBLIC "${CMAKE_CURRENT_LIST_DIR}/inc"
 	PRIVATE_HEADER "${CMAKE_CURRENT_LIST_DIR}/src")
-
-
 
 
 target_compile_features(WLib_CRC PUBLIC cxx_std_17)
@@ -32,4 +28,4 @@ else()
 endif()
 
 
-
+# TODO: Add tests and install targets if needed.

@@ -103,9 +103,9 @@ TEST_CASE("tst_engine")
       }
       throw "Illegal States";
     };
-    virtual void destroy_state(N::State_Base<States, Events>& state) override
+    virtual void destroy_state(N::State_Interface<States, Events>& state) override
     {
-      state.~State_Base();
+      state.~State_Interface();
     }
   };
 
