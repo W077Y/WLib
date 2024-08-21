@@ -13,16 +13,19 @@ namespace wlib::publisher
 
   template <typename T> class Publisher_Interface
   {
+  public:
+    using payload_t = T;
+
   protected:
     class Notifyable_Interface
     {
     public:
-      virtual ~Notifyable_Interface() = default;
-      virtual void notify(T const&)   = 0;
+      virtual ~Notifyable_Interface()       = default;
+      virtual void notify(payload_t const&) = 0;
     };
 
   public:
-    class Subscription_Interface: private Publisher_Interface<T>::Notifyable_Interface
+    class Subscription_Interface: private Publisher_Interface::Notifyable_Interface
     {
     public:
       Subscription_Interface()                                         = default;
@@ -68,6 +71,9 @@ namespace wlib::publisher
 
   template <> class Publisher_Interface<void>
   {
+  public:
+    using payload_t = void;
+
   protected:
     class Notifyable_Interface
     {
