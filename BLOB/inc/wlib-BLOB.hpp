@@ -2,12 +2,12 @@
 #ifndef WLIB_BLOB_HPP_INCLUDED
 #define WLIB_BLOB_HPP_INCLUDED
 
+#include <array>
 #include <bit>
 #include <concepts>
 #include <cstddef>
 #include <limits>
 #include <span>
-#include <array>
 
 namespace wlib::blob
 {
@@ -86,13 +86,7 @@ namespace wlib::blob
 
     constexpr bool try_read(std::size_t offset, std::span<std::byte> target) const noexcept
     {
-      if ((std::numeric_limits<std::size_t>::max() - this->m_idx_front) < offset)
-        return false;
-
-      if ((std::numeric_limits<std::size_t>::max() - (this->m_idx_front + offset)) < target.size())
-        return false;
-
-      if (this->m_idx_back < (this->m_idx_front + offset + target.size()))
+      if (!this->range_check_read(offset, target.size()))
         return false;
 
       internal::byte_copy(target, &this->m_data[this->m_idx_front + offset]);
@@ -108,13 +102,7 @@ namespace wlib::blob
 
     constexpr bool try_read_reverse(std::size_t offset, std::span<std::byte> target) const noexcept
     {
-      if ((std::numeric_limits<std::size_t>::max() - this->m_idx_front) < offset)
-        return false;
-
-      if ((std::numeric_limits<std::size_t>::max() - (this->m_idx_front + offset)) < target.size())
-        return false;
-
-      if (this->m_idx_back < (this->m_idx_front + offset + target.size()))
+      if (!this->range_check_read(offset, target.size()))
         return false;
 
       internal::byte_copy_reverse(target, &this->m_data[this->m_idx_front + offset]);
@@ -227,6 +215,20 @@ namespace wlib::blob
     }
 
   private:
+    constexpr bool range_check_read(std::size_t offset, std::size_t number_of_byte_to_read) const noexcept
+    {
+      if ((std::numeric_limits<std::size_t>::max() - this->m_idx_front) < offset)
+        return false;
+
+      if ((std::numeric_limits<std::size_t>::max() - (this->m_idx_front + offset)) < number_of_byte_to_read)
+        return false;
+
+      if (this->m_idx_back < (this->m_idx_front + offset + number_of_byte_to_read))
+        return false;
+
+      return true;
+    }
+
     std::span<std::byte const> m_data;
     std::size_t                m_idx_front;
     std::size_t                m_idx_back;
@@ -253,7 +255,7 @@ namespace wlib::blob
     [[nodiscard]] constexpr std::span<std::byte const> get_blob() const noexcept { return std::span<std::byte const>(this->m_data.data(), this->m_pos_idx); }
     [[nodiscard]] constexpr std::span<std::byte>       get_blob() noexcept { return std::span<std::byte>(this->m_data.data(), this->m_pos_idx); }
     constexpr void                                     clear() noexcept { this->m_pos_idx = 0; }
-    constexpr bool                                     try_adjust_position(std::ptrdiff_t const& offset) noexcept
+    constexpr bool                                     try_adjust_position(std::ptrdiff_t offset) noexcept
     {
       if ((offset > 0) && (this->m_pos_idx + offset) > this->m_data.size())
         return false;
@@ -263,19 +265,19 @@ namespace wlib::blob
       this->m_pos_idx += offset;
       return true;
     }
-    constexpr bool try_set_position(std::size_t const& position) noexcept
+    constexpr bool try_set_position(std::size_t position) noexcept
     {
       if (this->m_data.size() < position)
         return false;
       this->m_pos_idx = position;
       return true;
     }
-    void adjust_position(std::ptrdiff_t const& offset)
+    void adjust_position(std::ptrdiff_t offset)
     {
       if (!this->try_adjust_position(offset))
         return internal::handle_position_exception();
     }
-    void set_position(std::size_t const& position)
+    void set_position(std::size_t position)
     {
       if (!this->try_set_position(position))
         return internal::handle_position_exception();
@@ -283,10 +285,7 @@ namespace wlib::blob
 
     constexpr bool try_read(std::size_t offset, std::span<std::byte> target) const noexcept
     {
-      if ((std::numeric_limits<std::size_t>::max() - offset) < target.size())
-        return false;
-
-      if (this->m_pos_idx < (offset + target.size()))
+      if (!this->range_check_read(offset, target.size()))
         return false;
 
       internal::byte_copy(target, &this->m_data[offset]);
@@ -302,10 +301,7 @@ namespace wlib::blob
 
     constexpr bool try_read_reverse(std::size_t offset, std::span<std::byte> target) const noexcept
     {
-      if ((std::numeric_limits<std::size_t>::max() - offset) < target.size())
-        return false;
-
-      if (this->m_pos_idx < (offset + target.size()))
+      if (!this->range_check_read(offset, target.size()))
         return false;
 
       internal::byte_copy_reverse(target, &this->m_data[offset]);
@@ -365,10 +361,7 @@ namespace wlib::blob
 
     bool try_overwrite(std::size_t offset, std::span<std::byte const> data) noexcept
     {
-      if ((std::numeric_limits<std::size_t>::max() - offset) < data.size())
-        return false;
-
-      if (this->m_pos_idx < (offset + data.size()))
+      if (!this->range_check_read(offset, data.size()))
         return false;
 
       internal::byte_copy(this->m_data.subspan(offset, data.size()), data.data());
@@ -377,12 +370,9 @@ namespace wlib::blob
     bool try_overwrite_back(std::span<std::byte const> data) noexcept { return this->try_overwrite(this->m_pos_idx - data.size(), data); }
     bool try_overwrite_front(std::span<std::byte const> data) noexcept { return this->try_overwrite(0, data); }
 
-    bool try_overwrite_reverse(std::size_t const& offset, std::span<std::byte const> data) noexcept
+    bool try_overwrite_reverse(std::size_t offset, std::span<std::byte const> data) noexcept
     {
-      if ((std::numeric_limits<std::size_t>::max() - offset) < data.size())
-        return false;
-
-      if (this->m_pos_idx < (offset + data.size()))
+      if (!this->range_check_read(offset, data.size()))
         return false;
 
       internal::byte_copy_reverse(this->m_data.subspan(offset, data.size()), data.data());
@@ -391,7 +381,7 @@ namespace wlib::blob
     bool try_overwrite_back_reverse(std::span<std::byte const> data) noexcept { return this->try_overwrite_reverse(this->m_pos_idx - data.size(), data); }
     bool try_overwrite_front_reverse(std::span<std::byte const> data) noexcept { return this->try_overwrite_reverse(0, data); }
 
-    template <ArithmeticOrByte T> bool try_overwrite(std::size_t const& offset, T const& value, std::endian endian = std::endian::native) noexcept
+    template <ArithmeticOrByte T> bool try_overwrite(std::size_t offset, T const& value, std::endian endian = std::endian::native) noexcept
     {
       if (endian == std::endian::native)
         return this->try_overwrite(offset, { reinterpret_cast<std::byte const*>(&value), sizeof(T) });
@@ -413,7 +403,7 @@ namespace wlib::blob
         return this->try_overwrite_front_reverse({ reinterpret_cast<std::byte const*>(&value), sizeof(T) });
     }
 
-    template <ArithmeticOrByte T> void overwrite(std::size_t const& offset, T const& value, std::endian endian = std::endian::native)
+    template <ArithmeticOrByte T> void overwrite(std::size_t offset, T const& value, std::endian endian = std::endian::native)
     {
       if (!this->try_overwrite(offset, value, endian))
         internal::handle_overwrite_exception();
@@ -431,13 +421,7 @@ namespace wlib::blob
 
     bool try_insert(std::size_t offset, std::span<std::byte const> data) noexcept
     {
-      if (this->m_pos_idx < offset)
-        return false;
-
-      if ((std::numeric_limits<std::size_t>::max() - this->m_pos_idx) < data.size())
-        return false;
-
-      if (this->m_data.size() < (this->m_pos_idx + data.size()))
+      if (!this->range_check_insert(offset, data.size()))
         return false;
 
       internal::data_shift_right(this->get_blob(), offset, data.size());
@@ -447,15 +431,9 @@ namespace wlib::blob
     bool try_insert_back(std::span<std::byte const> data) noexcept { return this->try_insert(this->m_pos_idx, data); }
     bool try_insert_front(std::span<std::byte const> data) noexcept { return this->try_insert(0, data); }
 
-    bool try_insert_reverse(std::size_t const& offset, std::span<std::byte const> data) noexcept
+    bool try_insert_reverse(std::size_t offset, std::span<std::byte const> data) noexcept
     {
-      if (this->m_pos_idx < offset)
-        return false;
-
-      if ((std::numeric_limits<std::size_t>::max() - this->m_pos_idx) < data.size())
-        return false;
-
-      if (this->m_data.size() < (this->m_pos_idx + data.size()))
+      if (!this->range_check_insert(offset, data.size()))
         return false;
 
       internal::data_shift_right(this->get_blob(), offset, data.size());
@@ -465,7 +443,7 @@ namespace wlib::blob
     bool try_insert_back_reverse(std::span<std::byte const> data) noexcept { return this->try_insert_reverse(this->m_pos_idx, data); }
     bool try_insert_front_reverse(std::span<std::byte const> data) noexcept { return this->try_insert_reverse(0, data); }
 
-    template <ArithmeticOrByte T> bool try_insert(std::size_t const& offset, T const& value, std::endian endian = std::endian::native) noexcept
+    template <ArithmeticOrByte T> bool try_insert(std::size_t offset, T const& value, std::endian endian = std::endian::native) noexcept
     {
       if (endian == std::endian::native)
         return this->try_insert(offset, { reinterpret_cast<std::byte const*>(&value), sizeof(T) });
@@ -487,7 +465,7 @@ namespace wlib::blob
         return this->try_insert_front_reverse({ reinterpret_cast<std::byte const*>(&value), sizeof(T) });
     }
 
-    void insert(std::size_t const& offset, std::span<std::byte const> data)
+    void insert(std::size_t offset, std::span<std::byte const> data)
     {
       if (!this->try_insert(offset, data))
         internal::handle_insert_exception();
@@ -503,7 +481,7 @@ namespace wlib::blob
         internal::handle_insert_exception();
     }
 
-    template <ArithmeticOrByte T> void insert(std::size_t const& offset, T const& value, std::endian endian = std::endian::native)
+    template <ArithmeticOrByte T> void insert(std::size_t offset, T const& value, std::endian endian = std::endian::native)
     {
       if (!this->try_insert(offset, value, endian))
         internal::handle_insert_exception();
@@ -521,10 +499,7 @@ namespace wlib::blob
 
     bool try_remove(std::size_t offset, std::size_t number_of_bytes = 1) noexcept
     {
-      if ((std::numeric_limits<std::size_t>::max() - offset) < number_of_bytes)
-        return false;
-
-      if (this->m_pos_idx < (offset + number_of_bytes))
+      if (!this->range_check_read(offset, number_of_bytes))
         return false;
 
       this->m_pos_idx -= internal::data_shift_left(this->get_blob(), offset, number_of_bytes);
@@ -533,7 +508,7 @@ namespace wlib::blob
     bool try_remove_back(std::size_t number_of_bytes = 1) noexcept { return this->try_remove(this->m_pos_idx - number_of_bytes, number_of_bytes); }
     bool try_remove_front(std::size_t number_of_bytes = 1) noexcept { return this->try_remove(0, number_of_bytes); }
 
-    void remove(std::size_t const& offset, std::size_t number_of_bytes)
+    void remove(std::size_t offset, std::size_t number_of_bytes)
     {
       if (!this->try_remove(offset, number_of_bytes))
         return internal::handle_remove_exception();
@@ -549,11 +524,11 @@ namespace wlib::blob
         return internal::handle_remove_exception();
     }
 
-    template <ArithmeticOrByte T> bool try_remove(std::size_t const& offset) noexcept { return this->try_remove(offset, sizeof(T)); }
+    template <ArithmeticOrByte T> bool try_remove(std::size_t offset) noexcept { return this->try_remove(offset, sizeof(T)); }
     template <ArithmeticOrByte T> bool try_remove_back() noexcept { return this->try_remove_back(sizeof(T)); }
     template <ArithmeticOrByte T> bool try_remove_front() noexcept { return this->try_remove_front(sizeof(T)); }
 
-    template <ArithmeticOrByte T> void remove(std::size_t const& offset)
+    template <ArithmeticOrByte T> void remove(std::size_t offset)
     {
       if (!this->try_remove<T>(offset))
         return internal::handle_remove_exception();
@@ -569,7 +544,7 @@ namespace wlib::blob
         return internal::handle_remove_exception();
     }
 
-    template <ArithmeticOrByte T> bool try_extract(std::size_t const& offset, T& value, std::endian endian = std::endian::native) noexcept
+    template <ArithmeticOrByte T> bool try_extract(std::size_t offset, T& value, std::endian endian = std::endian::native) noexcept
     {
       return this->try_read(offset, value, endian) && this->try_remove<T>(offset);
     }
@@ -582,7 +557,7 @@ namespace wlib::blob
       return this->try_read_front(value, endian) && this->try_remove_front<T>();
     }
 
-    template <ArithmeticOrByte T> [[nodiscard]] T extract(std::size_t const& offset, std::endian endian = std::endian::native)
+    template <ArithmeticOrByte T> [[nodiscard]] T extract(std::size_t offset, std::endian endian = std::endian::native)
     {
       T ret;
       if (!this->try_extract(offset, ret, endian))
@@ -605,6 +580,31 @@ namespace wlib::blob
     }
 
   private:
+    constexpr bool range_check_read(std::size_t offset, std::size_t number_of_bytes_to_read) const noexcept
+    {
+      if ((std::numeric_limits<std::size_t>::max() - offset) < number_of_bytes_to_read)
+        return false;
+
+      if (this->m_pos_idx < (offset + number_of_bytes_to_read))
+        return false;
+
+      return true;
+    }
+
+    constexpr bool range_check_insert(std::size_t offset, std::size_t number_of_bytes_to_read) const noexcept
+    {
+      if (this->m_pos_idx < offset)
+        return false;
+
+      if ((std::numeric_limits<std::size_t>::max() - this->m_pos_idx) < number_of_bytes_to_read)
+        return false;
+
+      if (this->m_data.size() < (this->m_pos_idx + number_of_bytes_to_read))
+        return false;
+      
+      return true;
+    }
+
     std::span<std::byte> m_data;
     std::size_t          m_pos_idx = 0;
   };
@@ -636,6 +636,6 @@ namespace wlib::blob
     std::array<std::byte, N> m_mem{};
   };
 
-  }    // namespace wlib::blob
+}    // namespace wlib::blob
 
 #endif    // !WLIB_CRC_INTERFACE_HPP
