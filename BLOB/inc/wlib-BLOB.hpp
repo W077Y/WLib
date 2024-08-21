@@ -431,13 +431,13 @@ namespace wlib::blob
 
     bool try_insert(std::size_t offset, std::span<std::byte const> data) noexcept
     {
-      if ((std::numeric_limits<std::size_t>::max() - offset) < data.size())
-        return false;
-
       if (this->m_pos_idx < offset)
         return false;
 
-      if (this->m_data.size() < (offset + data.size()))
+      if ((std::numeric_limits<std::size_t>::max() - this->m_pos_idx) < data.size())
+        return false;
+
+      if (this->m_data.size() < (this->m_pos_idx + data.size()))
         return false;
 
       internal::data_shift_right(this->get_blob(), offset, data.size());
@@ -449,13 +449,13 @@ namespace wlib::blob
 
     bool try_insert_reverse(std::size_t const& offset, std::span<std::byte const> data) noexcept
     {
-      if ((std::numeric_limits<std::size_t>::max() - offset) < data.size())
-        return false;
-
       if (this->m_pos_idx < offset)
         return false;
 
-      if (this->m_data.size() < (offset + data.size()))
+      if ((std::numeric_limits<std::size_t>::max() - this->m_pos_idx) < data.size())
+        return false;
+
+      if (this->m_data.size() < (this->m_pos_idx + data.size()))
         return false;
 
       internal::data_shift_right(this->get_blob(), offset, data.size());
@@ -485,6 +485,22 @@ namespace wlib::blob
         return this->try_insert_front({ reinterpret_cast<std::byte const*>(&value), sizeof(T) });
       else
         return this->try_insert_front_reverse({ reinterpret_cast<std::byte const*>(&value), sizeof(T) });
+    }
+
+    void insert(std::size_t const& offset, std::span<std::byte const> data)
+    {
+      if (!this->try_insert(offset, data))
+        internal::handle_insert_exception();
+    }
+    void insert_back(std::span<std::byte const> data)
+    {
+      if (!this->try_insert_back(data))
+        internal::handle_insert_exception();
+    }
+    void insert_front(std::span<std::byte const> data)
+    {
+      if (!this->try_insert_front(data))
+        internal::handle_insert_exception();
     }
 
     template <ArithmeticOrByte T> void insert(std::size_t const& offset, T const& value, std::endian endian = std::endian::native)
