@@ -16,7 +16,6 @@ namespace wlib::publisher
   public:
     using payload_t = T;
 
-  protected:
     class Notifyable_Interface
     {
     public:
@@ -24,7 +23,6 @@ namespace wlib::publisher
       virtual void notify(payload_t const&) = 0;
     };
 
-  public:
     class Subscription_Interface: private Publisher_Interface::Notifyable_Interface
     {
     public:
