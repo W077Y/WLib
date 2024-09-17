@@ -11,6 +11,7 @@ message(STATUS "    -> WLIB-Comp:")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/CRC")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/BLOB")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Callback")
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Container")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Publisher")
 message(STATUS "########################")
 
@@ -28,6 +29,7 @@ target_link_libraries(${target_name}
  PUBLIC WLIB_CRC
  PUBLIC WLIB_BLOB
  PUBLIC WLIB_CALLBACK
+ PUBLIC WLIB_CONTAINER
  PUBLIC WLIB_PUBLISHER
 )
 

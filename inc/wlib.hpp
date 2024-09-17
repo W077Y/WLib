@@ -6,6 +6,7 @@
 #include <wlib-BLOB.hpp>
 #include <wlib-Callback.hpp>
 #include <wlib-Publisher.hpp>
+#include <wlib-Container.hpp>
 
 //#include <wlib_LED_abstraction.hpp>
 //#include <wlib_MPSC.hpp>
