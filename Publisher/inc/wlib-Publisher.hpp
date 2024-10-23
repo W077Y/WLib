@@ -151,6 +151,42 @@ namespace wlib::publisher
     wlib::Callback<void()>& m_target_callback;
   };
 
+  template <typename T, typename Tpub> class Memberfunction_CallbackSubscriber: public Publisher_Interface<Tpub>::Subscription_Interface
+  {
+    using mem_fnc_t = void (T::*)(Tpub const&);
+
+  public:
+    constexpr Memberfunction_CallbackSubscriber(T& obj, mem_fnc_t mem_fuc)
+        : m_obj(obj)
+        , m_mem_fuc(mem_fuc)
+    {
+    }
+
+  private:
+    void notify(Tpub const& val) override { return (this->m_obj.*m_mem_fuc)(val); }
+
+    T&        m_obj;
+    mem_fnc_t m_mem_fuc;
+  };
+
+  template <typename T> class Memberfunction_CallbackSubscriber<T, void>: public Publisher_Interface<void>::Subscription_Interface
+  {
+    using mem_fnc_t = void (T::*)();
+
+  public:
+    constexpr Memberfunction_CallbackSubscriber(T& obj, mem_fnc_t mem_fuc)
+        : m_obj(obj)
+        , m_mem_fuc(mem_fuc)
+    {
+    }
+
+  private:
+    void notify() override { return (this->m_obj.*m_mem_fuc)(); }
+
+    T&        m_obj;
+    mem_fnc_t m_mem_fuc;
+  };
+
   template <typename Tpub, typename Tsub> class TransformationSubscriber: public Publisher_Interface<Tpub>::Subscription_Interface
   {
   public:
