@@ -2,7 +2,7 @@
 #ifndef WLIB_CRC_8_HPP_INCLUDED
 #define WLIB_CRC_8_HPP_INCLUDED
 
-#include <wlib-crc_interface.hpp>
+#include <wlib-CRC_Interface.hpp>
 #include <cstddef>
 #include <cstdint>
 

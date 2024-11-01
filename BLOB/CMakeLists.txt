@@ -10,10 +10,10 @@ target_include_directories(${target_name}
 )
 
 target_sources(${target_name}
- PUBLIC "${CMAKE_CURRENT_LIST_DIR}/inc/wlib-blob.hpp"
+ PUBLIC "${CMAKE_CURRENT_LIST_DIR}/inc/wlib-BLOB.hpp"
 )
 
 # Implementation
 target_sources(${target_name}
- PRIVATE "${CMAKE_CURRENT_LIST_DIR}/src/wlib-blob.cpp"
+ PRIVATE "${CMAKE_CURRENT_LIST_DIR}/src/wlib-BLOB.cpp"
 )
