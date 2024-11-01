@@ -3,6 +3,7 @@
 #define WLIB_HPP_INCLUDED
 
 #include <wlib-CRC.hpp>
+#include <wlib-HASH.hpp>
 #include <wlib-BLOB.hpp>
 #include <wlib-Callback.hpp>
 #include <wlib-Publisher.hpp>
