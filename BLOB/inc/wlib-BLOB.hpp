@@ -52,7 +52,8 @@ namespace wlib::blob
     void handle_position_exception();
   }    // namespace internal
 
-  template <typename T> concept ArithmeticOrByte = std::is_arithmetic_v<T> || std::is_same_v<T, std::byte>;
+  template <typename T>
+  concept ArithmeticOrByte = std::is_arithmetic_v<T> || std::is_same_v<T, std::byte>;
 
   class ConstMemoryBlob
   {
@@ -601,7 +602,7 @@ namespace wlib::blob
 
       if (this->m_data.size() < (this->m_pos_idx + number_of_bytes_to_read))
         return false;
-      
+
       return true;
     }
 
@@ -636,6 +637,17 @@ namespace wlib::blob
     std::array<std::byte, N> m_mem{};
   };
 
+  template <ArithmeticOrByte T> MemoryBlob& operator<<(MemoryBlob& blob, T const& obj)
+  {
+    blob.insert_back(obj);
+    return blob;
+  }
+  template <ArithmeticOrByte T> MemoryBlob& operator<<(MemoryBlob& blob, std::span<T const> const& obj_span)
+  {
+    for (auto const& obj : obj_span)
+      blob << obj;
+    return blob;
+  }
 }    // namespace wlib::blob
 
 #endif    // !WLIB_CRC_INTERFACE_HPP
