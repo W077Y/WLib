@@ -642,10 +642,34 @@ namespace wlib::blob
     blob.insert_back(obj);
     return blob;
   }
-  template <ArithmeticOrByte T> MemoryBlob& operator<<(MemoryBlob& blob, std::span<T const> const& obj_span)
+  template <ArithmeticOrByte T> MemoryBlob& operator<<(MemoryBlob& blob, std::span<T const> obj_span)
   {
     for (auto const& obj : obj_span)
       blob << obj;
+    return blob;
+  }
+
+  template <ArithmeticOrByte T> MemoryBlob& operator>>(MemoryBlob& blob, T& obj)
+  {
+    obj = blob.extract_front<T>();
+    return blob;
+  }
+  template <ArithmeticOrByte T> MemoryBlob& operator>>(MemoryBlob& blob, std::span<T> obj_span)
+  {
+    for (auto& obj : obj_span)
+      blob >> obj;
+    return blob;
+  }
+
+  template <ArithmeticOrByte T> ConstMemoryBlob& operator>>(ConstMemoryBlob& blob, T& obj)
+  {
+    obj = blob.extract_front<T>();
+    return blob;
+  }
+  template <ArithmeticOrByte T> ConstMemoryBlob& operator>>(ConstMemoryBlob& blob, std::span<T> obj_span)
+  {
+    for (auto& obj : obj_span)
+      blob >> obj;
     return blob;
   }
 }    // namespace wlib::blob
