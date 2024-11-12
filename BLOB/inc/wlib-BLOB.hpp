@@ -52,8 +52,7 @@ namespace wlib::blob
     void handle_position_exception();
   }    // namespace internal
 
-  template <typename T>
-  concept ArithmeticOrByte = std::is_arithmetic_v<T> || std::is_same_v<T, std::byte>;
+  template <typename T> concept ArithmeticOrByte = std::is_arithmetic_v<T> || std::is_same_v<T, std::byte>;
 
   class ConstMemoryBlob
   {
@@ -74,7 +73,7 @@ namespace wlib::blob
     [[nodiscard]] constexpr std::size_t get_total_number_of_bytes() const noexcept { return this->m_data.size(); }
     [[nodiscard]] constexpr std::size_t get_number_of_remaining_bytes() const noexcept { return this->m_idx_back - this->m_idx_front; }
     [[nodiscard]] constexpr std::size_t get_number_of_processed_bytes() const noexcept { return this->m_data.size() - this->m_idx_back + this->m_idx_front; }
-    [[nodiscard]] constexpr std::span<std::byte const> get_blob() const noexcept
+    [[nodiscard]] constexpr std::span<std::byte const> get_span() const noexcept
     {
       return this->m_data.subspan(this->m_idx_front, this->m_idx_back - this->m_idx_front);
     }
@@ -253,8 +252,8 @@ namespace wlib::blob
     [[nodiscard]] constexpr std::size_t                get_total_number_of_bytes() const noexcept { return this->m_data.size(); }
     [[nodiscard]] constexpr std::size_t                get_number_of_free_bytes() const noexcept { return this->m_data.size() - this->m_pos_idx; }
     [[nodiscard]] constexpr std::size_t                get_number_of_used_bytes() const noexcept { return this->m_pos_idx; }
-    [[nodiscard]] constexpr std::span<std::byte const> get_blob() const noexcept { return std::span<std::byte const>(this->m_data.data(), this->m_pos_idx); }
-    [[nodiscard]] constexpr std::span<std::byte>       get_blob() noexcept { return std::span<std::byte>(this->m_data.data(), this->m_pos_idx); }
+    [[nodiscard]] constexpr std::span<std::byte const> get_span() const noexcept { return std::span<std::byte const>(this->m_data.data(), this->m_pos_idx); }
+    [[nodiscard]] constexpr std::span<std::byte>       get_span() noexcept { return std::span<std::byte>(this->m_data.data(), this->m_pos_idx); }
     constexpr void                                     clear() noexcept { this->m_pos_idx = 0; }
     constexpr bool                                     try_adjust_position(std::ptrdiff_t offset) noexcept
     {
@@ -425,7 +424,7 @@ namespace wlib::blob
       if (!this->range_check_insert(offset, data.size()))
         return false;
 
-      internal::data_shift_right(this->get_blob(), offset, data.size());
+      internal::data_shift_right(this->get_span(), offset, data.size());
       this->m_pos_idx += internal::byte_copy(this->m_data.subspan(offset, data.size()), data.data());
       return true;
     }
@@ -437,7 +436,7 @@ namespace wlib::blob
       if (!this->range_check_insert(offset, data.size()))
         return false;
 
-      internal::data_shift_right(this->get_blob(), offset, data.size());
+      internal::data_shift_right(this->get_span(), offset, data.size());
       this->m_pos_idx += internal::byte_copy_reverse(this->m_data.subspan(offset, data.size()), data.data());
       return true;
     }
@@ -503,7 +502,7 @@ namespace wlib::blob
       if (!this->range_check_read(offset, number_of_bytes))
         return false;
 
-      this->m_pos_idx -= internal::data_shift_left(this->get_blob(), offset, number_of_bytes);
+      this->m_pos_idx -= internal::data_shift_left(this->get_span(), offset, number_of_bytes);
       return true;
     }
     bool try_remove_back(std::size_t number_of_bytes = 1) noexcept { return this->try_remove(this->m_pos_idx - number_of_bytes, number_of_bytes); }
@@ -621,14 +620,14 @@ namespace wlib::blob
     StaticBlob(StaticBlob const& other)
         : StaticBlob()
     {
-      for (std::byte val : other.get_blob())
+      for (std::byte val : other.get_span())
         this->insert_back(val);
     }
 
     StaticBlob& operator=(StaticBlob const& other)
     {
       this->clear();
-      for (std::byte val : other.get_blob())
+      for (std::byte val : other.get_span())
         this->insert_back(val);
       return *this;
     }
@@ -642,7 +641,7 @@ namespace wlib::blob
     blob.insert_back(obj);
     return blob;
   }
-  template <ArithmeticOrByte T> MemoryBlob& operator<<(MemoryBlob& blob, std::span<T const> obj_span)
+  template <typename T> MemoryBlob& operator<<(MemoryBlob& blob, std::span<T const> obj_span)
   {
     for (auto const& obj : obj_span)
       blob << obj;
@@ -654,7 +653,7 @@ namespace wlib::blob
     obj = blob.extract_front<T>();
     return blob;
   }
-  template <ArithmeticOrByte T> MemoryBlob& operator>>(MemoryBlob& blob, std::span<T> obj_span)
+  template <typename T> MemoryBlob& operator>>(MemoryBlob& blob, std::span<T> obj_span)
   {
     for (auto& obj : obj_span)
       blob >> obj;
@@ -666,7 +665,7 @@ namespace wlib::blob
     obj = blob.extract_front<T>();
     return blob;
   }
-  template <ArithmeticOrByte T> ConstMemoryBlob& operator>>(ConstMemoryBlob& blob, std::span<T> obj_span)
+  template <typename T> ConstMemoryBlob& operator>>(ConstMemoryBlob& blob, std::span<T> obj_span)
   {
     for (auto& obj : obj_span)
       blob >> obj;
