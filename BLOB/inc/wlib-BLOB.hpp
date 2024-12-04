@@ -201,14 +201,14 @@ namespace wlib::blob
 
     template <ArithmeticOrByte T> [[nodiscard]] T extract_back(std::endian endian = std::endian::native)
     {
-      T ret;
+      T ret{};
       if (!this->try_extract_back(ret, endian))
         internal::handle_read_exception();
       return ret;
     }
     template <ArithmeticOrByte T> [[nodiscard]] T extract_front(std::endian endian = std::endian::native)
     {
-      T ret;
+      T ret{};
       if (!this->try_extract_front(ret, endian))
         internal::handle_read_exception();
       return ret;
