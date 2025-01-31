@@ -8,12 +8,14 @@
 #include <wlib-Callback.hpp>
 #include <wlib-Publisher.hpp>
 #include <wlib-Container.hpp>
+#include <wlib-SPI_Interface.hpp>
+#include <wlib-io.hpp>
+#include <wlib-StringSink.hpp>
 
 //#include <wlib_LED_abstraction.hpp>
 //#include <wlib_MPSC.hpp>
 //#include <wlib_PIN_abstraction.hpp>
 //#include <wlib_PWM_abstraction.hpp>
-//#include <wlib_SPI_abstraction.hpp>
 //#include <wlib_SPSC.hpp>
 //#include <wlib_serializer.hpp>
 
