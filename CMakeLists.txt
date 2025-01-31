@@ -17,6 +17,7 @@ add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Publisher")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/SPI_Abstraction")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/IO")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/StringSink")
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Memory")
 message(STATUS "########################")
 
 
@@ -39,6 +40,7 @@ target_link_libraries(${target_name}
  PUBLIC WLIB_SPI_ABSTRACTION
  PUBLIC WLIB_IO
  PUBLIC WLIB_STRINGSINK
+ PUBLIC WLIB_MEMORY
 )
 
 

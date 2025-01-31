@@ -11,6 +11,7 @@
 #include <wlib-SPI_Interface.hpp>
 #include <wlib-io.hpp>
 #include <wlib-StringSink.hpp>
+#include <wlib-memory.hpp>
 
 //#include <wlib_LED_abstraction.hpp>
 //#include <wlib_MPSC.hpp>
