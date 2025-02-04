@@ -52,7 +52,8 @@ namespace wlib::blob
     void handle_position_exception();
   }    // namespace internal
 
-  template <typename T> concept ArithmeticOrByte = std::is_arithmetic_v<T> || std::is_same_v<T, std::byte>;
+  template <typename T>
+  concept ArithmeticOrByte = std::is_arithmetic_v<T> || std::is_same_v<T, std::byte>;
 
   class ConstMemoryBlob
   {
@@ -647,6 +648,7 @@ namespace wlib::blob
       blob << obj;
     return blob;
   }
+  template <typename T, std::size_t N> MemoryBlob& operator<<(MemoryBlob& blob, std::array<T, N> const& obj_arr) { return blob << std::span<T const>(obj_arr); }
 
   template <ArithmeticOrByte T> MemoryBlob& operator>>(MemoryBlob& blob, T& obj)
   {
@@ -659,6 +661,8 @@ namespace wlib::blob
       blob >> obj;
     return blob;
   }
+  template <typename T, std::size_t N> MemoryBlob&      operator>>(MemoryBlob& blob, std::array<T, N>& obj_arr) { return blob >> std::span<T>(obj_arr); }
+
 
   template <ArithmeticOrByte T> ConstMemoryBlob& operator>>(ConstMemoryBlob& blob, T& obj)
   {
@@ -671,6 +675,7 @@ namespace wlib::blob
       blob >> obj;
     return blob;
   }
+  template <typename T, std::size_t N> ConstMemoryBlob& operator>>(ConstMemoryBlob& blob, std::array<T, N>& obj_arr) { return blob >> std::span<T>(obj_arr); }
 }    // namespace wlib::blob
 
 #endif    // !WLIB_CRC_INTERFACE_HPP
