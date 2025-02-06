@@ -141,21 +141,21 @@ namespace wlib::blob
 
     template <ArithmeticOrByte T> [[nodiscard]] T read(std::size_t offset, std::endian endian = std::endian::native) const
     {
-      T ret;
+      T ret{};
       if (!this->try_read(offset, ret, endian))
         internal::handle_read_exception();
       return ret;
     }
     template <ArithmeticOrByte T> [[nodiscard]] T read_back(std::endian endian = std::endian::native) const
     {
-      T ret;
+      T ret{};
       if (!this->try_read_back(ret, endian))
         internal::handle_read_exception();
       return ret;
     }
     template <ArithmeticOrByte T> [[nodiscard]] T read_front(std::endian endian = std::endian::native) const
     {
-      T ret;
+      T ret{};
       if (!this->try_read_front(ret, endian))
         internal::handle_read_exception();
       return ret;
@@ -340,21 +340,21 @@ namespace wlib::blob
 
     template <ArithmeticOrByte T> [[nodiscard]] T read(std::size_t offset, std::endian endian = std::endian::native) const
     {
-      T ret;
+      T ret{};
       if (!this->try_read(offset, ret, endian))
         internal::handle_read_exception();
       return ret;
     }
     template <ArithmeticOrByte T> [[nodiscard]] T read_back(std::endian endian = std::endian::native) const
     {
-      T ret;
+      T ret{};
       if (!this->try_read_back(ret, endian))
         internal::handle_read_exception();
       return ret;
     }
     template <ArithmeticOrByte T> [[nodiscard]] T read_front(std::endian endian = std::endian::native) const
     {
-      T ret;
+      T ret{};
       if (!this->try_read_front(ret, endian))
         internal::handle_read_exception();
       return ret;
