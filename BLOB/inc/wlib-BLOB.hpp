@@ -37,11 +37,19 @@ namespace wlib::blob
         ent = *src++;
       return trg.size();
     }
+
     inline std::size_t byte_copy_reverse(std::span<std::byte> trg, std::byte const* src)
     {
       src += trg.size();
       for (std::byte& ent : trg)
         ent = *--src;
+      return trg.size();
+    }
+
+    inline std::size_t byte_fill(std::span<std::byte> trg, std::byte src)
+    {
+      for (std::byte& ent : trg)
+        ent = src;
       return trg.size();
     }
 
@@ -420,6 +428,21 @@ namespace wlib::blob
         internal::handle_overwrite_exception();
     }
 
+    bool try_insert(std::size_t offset, std::byte data, std::size_t count) noexcept
+    {
+      if (count == 0)
+        return true;
+
+      if (!this->range_check_insert(offset, count))
+        return false;
+
+      internal::data_shift_right(this->get_span(), offset, count);
+      this->m_pos_idx += internal::byte_fill(this->m_data.subspan(offset, count), data);
+      return true;
+    }
+    bool try_insert_back(std::byte data, std::size_t count) noexcept { return this->try_insert(this->m_pos_idx, data, count); }
+    bool try_insert_front(std::byte data, std::size_t count) noexcept { return this->try_insert(0, data, count); }
+
     bool try_insert(std::size_t offset, std::span<std::byte const> data) noexcept
     {
       if (!this->range_check_insert(offset, data.size()))
@@ -465,6 +488,24 @@ namespace wlib::blob
       else
         return this->try_insert_front_reverse({ reinterpret_cast<std::byte const*>(&value), sizeof(T) });
     }
+
+
+    void insert(std::size_t offset, std::byte data, std::size_t count)
+    {
+      if (!this->try_insert(offset, data, count))
+        internal::handle_insert_exception();
+    }
+    void insert_back(std::byte data, std::size_t count)
+    {
+      if (!this->try_insert_back(data, count))
+        internal::handle_insert_exception();
+    }
+    void insert_front(std::byte data, std::size_t count)
+    {
+      if (!this->try_insert_front(data, count))
+        internal::handle_insert_exception();
+    }
+
 
     void insert(std::size_t offset, std::span<std::byte const> data)
     {
@@ -661,8 +702,7 @@ namespace wlib::blob
       blob >> obj;
     return blob;
   }
-  template <typename T, std::size_t N> MemoryBlob&      operator>>(MemoryBlob& blob, std::array<T, N>& obj_arr) { return blob >> std::span<T>(obj_arr); }
-
+  template <typename T, std::size_t N> MemoryBlob& operator>>(MemoryBlob& blob, std::array<T, N>& obj_arr) { return blob >> std::span<T>(obj_arr); }
 
   template <ArithmeticOrByte T> ConstMemoryBlob& operator>>(ConstMemoryBlob& blob, T& obj)
   {
