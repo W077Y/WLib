@@ -117,10 +117,7 @@ namespace wlib::storage::strategy
       wlib::blob::MemoryBlob blob{ tmp };
       blob << this->m_val;
 
-      while (blob.get_number_of_used_bytes() < this->get_begin_of_crc())
-      {
-        blob << std::byte(0x00);
-      }
+      blob.insert_back(std::byte(0x00), this->get_begin_of_crc() - blob.get_number_of_used_bytes());
       blob.insert_back(crc_t()(blob.get_span()));
 
       return blob.get_span();
