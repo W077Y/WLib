@@ -5,10 +5,10 @@
 #include <cstdint>
 #include <optional>
 #include <span>
+#include <wlib-BLOB.hpp>
 #include <wlib-CRC.hpp>
 #include <wlib-Provider_Interface.hpp>
 #include <wlib-memory.hpp>
-#include <wlib-BLOB.hpp>
 
 namespace wlib::storage
 {
@@ -42,35 +42,29 @@ namespace wlib::storage::strategy
         , m_add{ addresses }
         , m_buffer_pro(memory_provider)
     {
-      try
+      auto                 obj = this->m_buffer_pro.request();
+      std::span<std::byte> tmp = obj.get().subspan(0, this->m_blk_sz);
+
+      this->m_mem.read(this->m_add[0], tmp);
+      auto const val_1 = p_check(tmp);
+
+      this->m_mem.read(this->m_add[1], tmp);
+      auto const val_2 = p_check(tmp);
+
+      if (val_1.has_value())
       {
-        auto                 obj = this->m_buffer_pro.request();
-        std::span<std::byte> tmp = obj.get().subspan(0, this->m_blk_sz);
+        this->m_val = val_1.value();
 
-        this->m_mem.read(this->m_add[0], tmp);
-        auto const val_1 = p_check(tmp);
+        if (val_2.has_value() && val_2.value() == this->m_val)
+          return;
 
-        this->m_mem.read(this->m_add[1], tmp);
-        auto const val_2 = p_check(tmp);
-
-        if (val_1.has_value())
-        {
-          this->m_val = val_1.value();
-
-          if (val_2.has_value() && val_2.value() == this->m_val)
-            return;
-
-          this->p_recover_2(tmp);
-        }
-        else if (val_2.has_value())
-        {
-          this->m_val = val_2.value();
-
-          this->p_recover_1(tmp);
-        }
+        this->p_recover_2(tmp);
       }
-      catch (...)
+      else if (val_2.has_value())
       {
+        this->m_val = val_2.value();
+
+        this->p_recover_1(tmp);
       }
     }
 
@@ -89,27 +83,21 @@ namespace wlib::storage::strategy
       this->m_mem.flush();
     }
 
+  protected:
   private:
-    std::size_t get_begin_of_crc() const { return this->m_blk_sz - sizeof(crc_t::used_type); }
+    constexpr std::size_t get_begin_of_crc() const { return this->m_blk_sz - sizeof(crc_t::used_type); }
 
     std::optional<value_type> p_check(std::span<std::byte const> buffer)
     {
-      try
-      {
-        wlib::blob::ConstMemoryBlob blob{ buffer };
-        crc_t::used_type            crc_in   = blob.read<crc_t::used_type>(this->get_begin_of_crc());
-        crc_t::used_type            crc_calc = crc_t()(buffer.data(), this->get_begin_of_crc());
-        if (crc_in != crc_calc)
-          return std::nullopt;
-
-        value_type ret = {};
-        blob >> ret;
-        return ret;
-      }
-      catch (...)
-      {
+      wlib::blob::ConstMemoryBlob blob{ buffer };
+      crc_t::used_type            crc_in   = blob.read<crc_t::used_type>(this->get_begin_of_crc());
+      crc_t::used_type            crc_calc = crc_t()(buffer.data(), this->get_begin_of_crc());
+      if (crc_in != crc_calc)
         return std::nullopt;
-      }
+
+      value_type ret = {};
+      blob >> ret;
+      return ret;
     }
 
     std::span<std::byte> p_serialize(std::span<std::byte> tmp)
@@ -123,19 +111,15 @@ namespace wlib::storage::strategy
       return blob.get_span();
     }
 
-    void p_recover_1(std::span<std::byte> buffer)
+    void p_recover(std::size_t add, std::span<std::byte> buffer)
     {
       auto tmp = this->p_serialize(buffer);
-      this->m_mem.write(this->m_add[0], tmp);
+      this->m_mem.write(add, tmp);
       this->m_mem.flush();
     }
 
-    void p_recover_2(std::span<std::byte> buffer)
-    {
-      auto tmp = this->p_serialize(buffer);
-      this->m_mem.write(this->m_add[1], tmp);
-      this->m_mem.flush();
-    }
+    void p_recover_1(std::span<std::byte> buffer) { return this->p_recover(this->m_add[0], buffer); }
+    void p_recover_2(std::span<std::byte> buffer) { return this->p_recover(this->m_add[1], buffer); }
 
     wlib::memory::Non_Volatile_Memory_Interface& m_mem;
     std::size_t                                  m_blk_sz;
