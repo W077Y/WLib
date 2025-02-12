@@ -14,9 +14,11 @@ namespace wlib
     public:
       virtual ~Non_Volatile_Memory_Interface() = default;
 
-      virtual void write(std::size_t add, std::span<std::byte const> data) = 0;
-      virtual void flush()                                                 = 0;
-      virtual void read(std::size_t add, std::span<std::byte> data)        = 0;
+      virtual std::size_t capacity() const                                        = 0;
+      virtual std::size_t alignment() const                                       = 0;
+      virtual void        write(std::size_t add, std::span<std::byte const> data) = 0;
+      virtual void        flush()                                                 = 0;
+      virtual void        read(std::size_t add, std::span<std::byte> data)        = 0;
     };
   }    // namespace memory
 }    // namespace wlib
