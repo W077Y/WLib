@@ -223,6 +223,18 @@ namespace wlib::blob
       return ret;
     }
 
+    template <ArithmeticOrByte T, std::size_t N> [[nodiscard]] std::array<T, N> extract_front(std::endian endian = std::endian::native)
+    {
+      std::array<T, N> ret{};
+      for (auto& ent : ret)
+      {
+        ent = this->extract_front<T>();
+      }
+      return ret;
+    }
+
+
+
   private:
     constexpr bool range_check_read(std::size_t offset, std::size_t number_of_byte_to_read) const noexcept
     {
@@ -489,7 +501,6 @@ namespace wlib::blob
         return this->try_insert_front_reverse({ reinterpret_cast<std::byte const*>(&value), sizeof(T) });
     }
 
-
     void insert(std::size_t offset, std::byte data, std::size_t count)
     {
       if (!this->try_insert(offset, data, count))
@@ -505,7 +516,6 @@ namespace wlib::blob
       if (!this->try_insert_front(data, count))
         internal::handle_insert_exception();
     }
-
 
     void insert(std::size_t offset, std::span<std::byte const> data)
     {
