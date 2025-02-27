@@ -1,15 +1,15 @@
-﻿#pragma once
+#pragma once
 #ifndef WLIB_STRINGBUILDER_HPP_INCLUDED
 #define WLIB_STRINGBUILDER_HPP_INCLUDED
 
-#include <cstdint>
 #include <array>
 #include <charconv>
 #include <concepts>
-#include <span>
-#include <string_view>
+#include <cstdint>
 #include <exception>
+#include <span>
 #include <stdexcept>
+#include <string_view>
 
 namespace wlib
 {
@@ -264,9 +264,12 @@ namespace wlib
       else
         res = std::to_chars(res.ptr, buf + sizeof(buf), this->m_val, this->m_fmt.get_format(), this->m_fmt.get_precision());
 
-      std::size_t const len        = res.ptr - buf;
-      std::size_t       fill       = len < this->m_fmt.get_width() ? this->m_fmt.get_width() - len : 0;
-      bool const        is_negativ = this->m_val < T{ 0 };
+      std::size_t const len  = res.ptr - buf;
+      std::size_t       fill = this->m_fmt.get_width() < 0                             ? 0 :
+                               len < static_cast<std::size_t>(this->m_fmt.get_width()) ? static_cast<std::size_t>(this->m_fmt.get_width()) - len :
+                                                                                         0;
+
+      bool const is_negativ = this->m_val < T{ 0 };
 
       if (this->m_fmt.get_sign() == fmt_t::sign_mode_t::none)
       {
@@ -313,7 +316,9 @@ namespace wlib
       res = std::to_chars(res.ptr, buf + sizeof(buf), this->m_val, this->m_fmt.get_base());
 
       std::size_t const len        = res.ptr - buf;
-      std::size_t       fill       = len < this->m_fmt.get_width() ? this->m_fmt.get_width() - len : 0;
+      std::size_t       fill       = this->m_fmt.get_width() < 0                             ? 0 :
+                                     len < static_cast<std::size_t>(this->m_fmt.get_width()) ? static_cast<std::size_t>(this->m_fmt.get_width()) - len :
+                                                                                               0;
       bool const        is_negativ = this->m_val < T{ 0 };
 
       if (this->m_fmt.get_sign() == fmt_t::sign_mode_t::none)
