@@ -1,4 +1,4 @@
-#include <wlib-StringSink.hpp>
+﻿#include <wlib-StringSink.hpp>
 #include <cstring>
 
 namespace wlib
@@ -7,7 +7,7 @@ namespace wlib
   {
     class null_sink_t: public StringSink_Interface
     {
-      bool operator()(char const*, uint32_t len ) override { return true; }
+      bool operator()(char const*, std::size_t ) override { return true; }
     };
   }    // namespace
 
@@ -18,7 +18,8 @@ namespace wlib
   }
 
   bool StringSink_Interface::operator()(char const* c_str) { 
-    return operator()(c_str, std::strlen(c_str)); 
+    return this->operator()(c_str, std::strlen(c_str)); 
   }
 
+  bool StringSink_Interface::operator()(std::string_view str) { return this->operator()(str.data(), str.length()); }
 }    // namespace wlib

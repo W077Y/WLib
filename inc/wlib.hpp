@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef WLIB_HPP_INCLUDED
 #define WLIB_HPP_INCLUDED
 
@@ -11,6 +11,7 @@
 #include <wlib-SPI_Interface.hpp>
 #include <wlib-io.hpp>
 #include <wlib-StringSink.hpp>
+#include <wlib-StringBuilder.hpp>
 #include <wlib-memory.hpp>
 #include <wlib-storage.hpp>
 #include <wlib-Provider_Interface.hpp>
