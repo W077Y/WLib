@@ -2,14 +2,14 @@
 #ifndef WLIB_STRINGBUILDER_HPP_INCLUDED
 #define WLIB_STRINGBUILDER_HPP_INCLUDED
 
-#include <cstdint>
 #include <array>
 #include <charconv>
 #include <concepts>
-#include <span>
-#include <string_view>
+#include <cstdint>
 #include <exception>
+#include <span>
 #include <stdexcept>
+#include <string_view>
 
 namespace wlib
 {
@@ -95,7 +95,6 @@ namespace wlib
     {
       enum class sign_mode_t
       {
-        none,
         negativ_only,
         allways,
       };
@@ -112,7 +111,7 @@ namespace wlib
           return sign_mode_t::negativ_only;
 
         default:
-          return sign_mode_t::none;
+          return sign_mode_t::negativ_only;
         }
       }
       static constexpr auto parse_int(char const*(&fmt), int default_value) -> int
@@ -148,6 +147,10 @@ namespace wlib
         case 'x':
           fmt++;
           return std::chars_format::hex;
+        case 'G':
+        case 'g':
+          fmt++;
+          return std::chars_format::general;
         default:
           return std::chars_format::general;
         }
@@ -203,7 +206,7 @@ namespace wlib
       constexpr std::chars_format get_format() const { return this->m_fmt; }
 
     private:
-      sign_mode_t       m_sign  = sign_mode_t::none;
+      sign_mode_t       m_sign  = sign_mode_t::negativ_only;
       int               m_width = 0;
       int               m_pre   = -1;
       std::chars_format m_fmt   = std::chars_format::general;
@@ -235,7 +238,7 @@ namespace wlib
       constexpr int         get_base() const { return this->m_base; }
 
     private:
-      sign_mode_t m_sign  = sign_mode_t::none;
+      sign_mode_t m_sign  = sign_mode_t::negativ_only;
       int         m_width = 0;
       int         m_base  = 10;
     };
@@ -245,10 +248,10 @@ namespace wlib
 
   template <std::floating_point T> class formator_t<T>
   {
+  public:
     using fmt_t = Internal::floating_point_number_format_t;
 
-  public:
-    constexpr formator_t(char const* fmt, T const& val)
+    constexpr formator_t(fmt_t fmt, T const& val)
         : m_fmt{ fmt }
         , m_val(val)
     {
@@ -259,33 +262,22 @@ namespace wlib
       char                 buf[50] = {};
       std::to_chars_result res     = { .ptr{ buf }, .ec{} };
 
+      char const sign_fill = this->m_fmt.get_sign() == fmt_t::sign_mode_t::negativ_only ? ' ' : '+';
+      if (T{ 0 } <= this->m_val)
+        *res.ptr++ = sign_fill;
+
       if (this->m_fmt.get_precision() < 0)
         res = std::to_chars(res.ptr, buf + sizeof(buf), this->m_val, this->m_fmt.get_format());
       else
         res = std::to_chars(res.ptr, buf + sizeof(buf), this->m_val, this->m_fmt.get_format(), this->m_fmt.get_precision());
 
-      std::size_t const len        = res.ptr - buf;
-      std::size_t       fill       = len < this->m_fmt.get_width() ? this->m_fmt.get_width() - len : 0;
-      bool const        is_negativ = this->m_val < T{ 0 };
+      if (res.ec != std::errc())
+        throw std::runtime_error("formatting not possible");
 
-      if (this->m_fmt.get_sign() == fmt_t::sign_mode_t::none)
-      {
-        builder.append(' ', fill);
-      }
-      else if (this->m_fmt.get_sign() == fmt_t::sign_mode_t::negativ_only)
-      {
-        if (is_negativ && fill > 0)
-          builder.append(' ', fill - 1);
-        else
-          builder.append(' ', fill);
-      }
-      if (this->m_fmt.get_sign() == fmt_t::sign_mode_t::allways)
-      {
-        if (fill > 0)
-          builder.append(' ', fill - 1);
-        if (!is_negativ)
-          builder.append('+');
-      }
+      std::size_t const len  = res.ptr - buf;
+      std::size_t const fill = this->m_fmt.get_width() < 0 ? 0 : len < this->m_fmt.get_width() ? this->m_fmt.get_width() - len : 0;
+
+      builder.append(' ', fill);
       return builder.append(buf);
     }
 
@@ -296,10 +288,10 @@ namespace wlib
 
   template <std::integral T> class formator_t<T>
   {
+  public:
     using fmt_t = Internal::integer_number_format_t;
 
-  public:
-    constexpr formator_t(char const* fmt, T const& val)
+    constexpr formator_t(fmt_t fmt, T const& val)
         : m_fmt{ fmt }
         , m_val(val)
     {
@@ -310,30 +302,18 @@ namespace wlib
       char                 buf[50] = {};
       std::to_chars_result res     = { .ptr{ buf }, .ec{} };
 
+      char const sign_fill = this->m_fmt.get_sign() == fmt_t::sign_mode_t::negativ_only ? ' ' : '+';
+      if (T{ 0 } <= this->m_val)
+        *res.ptr++ = sign_fill;
+
       res = std::to_chars(res.ptr, buf + sizeof(buf), this->m_val, this->m_fmt.get_base());
 
-      std::size_t const len        = res.ptr - buf;
-      std::size_t       fill       = len < this->m_fmt.get_width() ? this->m_fmt.get_width() - len : 0;
-      bool const        is_negativ = this->m_val < T{ 0 };
+      if (res.ec != std::errc())
+        throw std::runtime_error("formatting not possible");
 
-      if (this->m_fmt.get_sign() == fmt_t::sign_mode_t::none)
-      {
-        builder.append(' ', fill);
-      }
-      else if (this->m_fmt.get_sign() == fmt_t::sign_mode_t::negativ_only)
-      {
-        if (is_negativ && fill > 0)
-          builder.append(' ', fill - 1);
-        else
-          builder.append(' ', fill);
-      }
-      if (this->m_fmt.get_sign() == fmt_t::sign_mode_t::allways)
-      {
-        if (fill > 0)
-          builder.append(' ', fill - 1);
-        if (!is_negativ)
-          builder.append('+');
-      }
+      std::size_t const len  = res.ptr - buf;
+      std::size_t const fill = (this->m_fmt.get_width() < 0) ? 0 : (len < this->m_fmt.get_width()) ? (this->m_fmt.get_width() - len) : 0;
+      builder.append(' ', fill);
       return builder.append(buf);
     }
 
@@ -342,7 +322,7 @@ namespace wlib
     T const& m_val;
   };
 
-  template <typename T> constexpr auto fmt(char const* fmt, T const& val) { return formator_t<T>{ fmt, val }; }
+  template <typename T> constexpr auto fmt(char const* fmt, T const& val) { return formator_t<T>{ { fmt }, val }; }
 
   template <typename T> constexpr StringBuilder<0>& operator<<(StringBuilder<0>& builder, T str) { return builder.append(str); }
   template <typename T> constexpr StringBuilder<0>& operator<<(StringBuilder<0>& builder, formator_t<T> const& val) { return val.append_to(builder); }
