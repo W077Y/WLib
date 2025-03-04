@@ -275,7 +275,7 @@ namespace wlib
         throw std::runtime_error("formatting not possible");
 
       std::size_t const len  = res.ptr - buf;
-      std::size_t const fill = this->m_fmt.get_width() < 0 ? 0 : len < this->m_fmt.get_width() ? this->m_fmt.get_width() - len : 0;
+      std::size_t const fill = this->m_fmt.get_width() < 0 ? 0 : len < static_cast<std::size_t>(this->m_fmt.get_width()) ? this->m_fmt.get_width() - len : 0;
 
       builder.append(' ', fill);
       return builder.append(buf);
@@ -312,7 +312,7 @@ namespace wlib
         throw std::runtime_error("formatting not possible");
 
       std::size_t const len  = res.ptr - buf;
-      std::size_t const fill = (this->m_fmt.get_width() < 0) ? 0 : (len < this->m_fmt.get_width()) ? (this->m_fmt.get_width() - len) : 0;
+      std::size_t const fill = (this->m_fmt.get_width() < 0) ? 0 : (len < static_cast<std::size_t>(this->m_fmt.get_width())) ? (this->m_fmt.get_width() - len) : 0;
       builder.append(' ', fill);
       return builder.append(buf);
     }
