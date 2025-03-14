@@ -7,6 +7,7 @@
 #include <iterator>
 #include <optional>
 #include <atomic>
+#include <new>
 
 namespace wlib::container
 {
