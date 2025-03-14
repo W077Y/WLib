@@ -13,9 +13,28 @@
 
 namespace wlib
 {
-  template <std::size_t N> class StringBuilder;
+  namespace format
+  {
+    enum class sign_mode_t
+    {
+      negativ_only,
+      space,
+      both,
+    };
 
-  template <> class StringBuilder<0>
+    enum class alignment_t
+    {
+      left,
+      center,
+      right,
+    };
+
+    using format_t = std::chars_format;
+  }    // namespace format
+
+  template <typename T> class formator_t;
+
+  class StringBuilder
   {
   public:
     constexpr StringBuilder(std::span<char> buffer)
@@ -60,7 +79,12 @@ namespace wlib
         this->m_buffer[this->m_idx++] = c;
       return *this;
     }
-    constexpr char const* as_c_str() const { return this->m_buffer.data(); }
+
+    template <typename T> constexpr StringBuilder& append(T const& val)
+    {
+      constexpr formator_t<T> fmt{};
+      return fmt.append_to(*this, val);
+    }
 
     void clear()
     {
@@ -69,6 +93,7 @@ namespace wlib
       return;
     }
 
+    constexpr char const*      as_c_str() const { return this->m_buffer.data(); }
     constexpr std::string_view as_string_view() const { return std::string_view{ this->m_buffer.data(), this->m_idx }; }
 
   private:
@@ -77,11 +102,22 @@ namespace wlib
     std::size_t           m_idx = 0;
   };
 
-  template <std::size_t N> class StringBuilder: public StringBuilder<0>
+  template <std::size_t N> class StaticStringBuilder;
+
+  template <> class StaticStringBuilder<0>: public StringBuilder
   {
   public:
-    constexpr StringBuilder()
-        : StringBuilder<0>(this->m_buffer)
+    constexpr StaticStringBuilder(std::span<char> buffer)
+        : StringBuilder{ buffer }
+    {
+    }
+  };
+
+  template <std::size_t N> class StaticStringBuilder: public StaticStringBuilder<0>
+  {
+  public:
+    constexpr StaticStringBuilder()
+        : StaticStringBuilder<0>(this->m_buffer)
     {
     }
 
@@ -89,243 +125,180 @@ namespace wlib
     std::array<char, N + 1> m_buffer = {};
   };
 
-  namespace Internal
-  {
-    struct number_format_base_t
-    {
-      enum class sign_mode_t
-      {
-        negativ_only,
-        allways,
-      };
-
-      static constexpr auto parse_sign(char const*(&fmt)) -> sign_mode_t
-      {
-        switch (*fmt)
-        {
-        case '+':
-          fmt++;
-          return sign_mode_t::allways;
-        case '-':
-          fmt++;
-          return sign_mode_t::negativ_only;
-
-        default:
-          return sign_mode_t::negativ_only;
-        }
-      }
-      static constexpr auto parse_int(char const*(&fmt), int default_value) -> int
-      {
-        for (; *fmt == ' '; ++fmt)
-        {
-        }
-
-        if (*fmt < '0' || '9' < *fmt)
-          return default_value;
-
-        int val = 0;
-        for (; '0' <= *fmt && *fmt <= '9'; ++fmt)
-        {
-          val *= 10;
-          val += *fmt - '0';
-        }
-        return val;
-      }
-      static constexpr auto parse_format(char const*(&fmt)) -> std::chars_format
-      {
-        switch (*fmt)
-        {
-        case 'E':
-        case 'e':
-          fmt++;
-          return std::chars_format::scientific;
-        case 'F':
-        case 'f':
-          fmt++;
-          return std::chars_format::fixed;
-        case 'X':
-        case 'x':
-          fmt++;
-          return std::chars_format::hex;
-        case 'G':
-        case 'g':
-          fmt++;
-          return std::chars_format::general;
-        default:
-          return std::chars_format::general;
-        }
-      }
-      static constexpr auto parse_base(char const*(&fmt)) -> int
-      {
-        switch (*fmt)
-        {
-        case 'X':
-        case 'x':
-          fmt++;
-          return 16;
-        case 'B':
-        case 'b':
-          fmt++;
-          return 2;
-        default:
-          return 10;
-        }
-      }
-    };
-
-    class floating_point_number_format_t: public number_format_base_t
-    {
-    public:
-      constexpr floating_point_number_format_t(char const* fmt)
-      {
-        if (fmt == nullptr || *fmt == '\0')
-          return;
-
-        this->m_sign = parse_sign(fmt);
-
-        this->m_width = parse_int(fmt, 0);
-
-        if (*fmt == '.')
-        {
-          ++fmt;
-          this->m_pre = parse_int(fmt, -1);
-        }
-
-        if (*fmt == '\0')
-          return;
-
-        this->m_fmt = parse_format(fmt);
-
-        if (*fmt != '\0')
-          throw std::invalid_argument("Invalid format specifier!");
-      }
-
-      constexpr sign_mode_t       get_sign() const { return this->m_sign; }
-      constexpr int               get_width() const { return this->m_width; }
-      constexpr int               get_precision() const { return this->m_pre; }
-      constexpr std::chars_format get_format() const { return this->m_fmt; }
-
-    private:
-      sign_mode_t       m_sign  = sign_mode_t::negativ_only;
-      int               m_width = 0;
-      int               m_pre   = -1;
-      std::chars_format m_fmt   = std::chars_format::general;
-    };
-
-    class integer_number_format_t: public number_format_base_t
-    {
-    public:
-      constexpr integer_number_format_t(char const* fmt)
-      {
-        if (fmt == nullptr || *fmt == '\0')
-          return;
-
-        this->m_sign = parse_sign(fmt);
-
-        this->m_width = parse_int(fmt, 0);
-
-        if (*fmt == '\0')
-          return;
-
-        this->m_base = parse_base(fmt);
-
-        if (*fmt != '\0')
-          throw std::invalid_argument("Invalid format specifier!");
-      }
-
-      constexpr sign_mode_t get_sign() const { return this->m_sign; }
-      constexpr int         get_width() const { return this->m_width; }
-      constexpr int         get_base() const { return this->m_base; }
-
-    private:
-      sign_mode_t m_sign  = sign_mode_t::negativ_only;
-      int         m_width = 0;
-      int         m_base  = 10;
-    };
-  }    // namespace Internal
-
   template <typename T> class formator_t;
 
-  template <std::floating_point T> class formator_t<T>
+  template <> class formator_t<std::string_view>
   {
   public:
-    using fmt_t = Internal::floating_point_number_format_t;
+    using alignment_t = format::alignment_t;
 
-    constexpr formator_t(fmt_t fmt, T const& val)
-        : m_fmt{ fmt }
-        , m_val(val)
+    constexpr formator_t() = default;
+    constexpr formator_t(std::string_view pre, std::string_view post, int min_width, alignment_t alignment)
+        : m_prefix(pre)
+        , m_postfix(post)
+        , m_width(min_width)
+        , m_align(alignment)
     {
     }
 
-    constexpr StringBuilder<0>& append_to(StringBuilder<0>& builder) const
+    constexpr StringBuilder& append_to(StringBuilder& builder, std::string_view const& value) const
+    {
+      std::size_t const fill = value.length() < this->m_width ? this->m_width - value.length() : 0;
+
+      builder.append(this->m_prefix);
+
+      switch (this->m_align)
+      {
+      case alignment_t::right:
+        builder.append(' ', fill);
+        builder.append(value);
+        break;
+
+      case alignment_t::center:
+        builder.append(' ', fill / 2);
+        builder.append(value);
+        builder.append(' ', fill - fill / 2);
+        break;
+
+      case alignment_t::left:
+      default:
+        builder.append(value);
+        builder.append(' ', fill);
+        break;
+      }
+
+      return builder.append(this->m_postfix);
+    }
+
+  private:
+    std::string_view m_prefix  = {};
+    std::string_view m_postfix = {};
+    int              m_width   = 0;
+    alignment_t      m_align   = alignment_t::left;
+  };
+
+  template <std::floating_point T> class formator_t<T>: protected formator_t<std::string_view>
+  {
+    using base_t = formator_t<std::string_view>;
+
+  public:
+    using value_type  = std::remove_cvref_t<T>;
+    using sign_mode_t = format::sign_mode_t;
+    using format_t    = format::format_t;
+
+    struct floating_value_format_t
+    {
+      int         min_width = 0;
+      int         precision = -1;
+      sign_mode_t sign      = sign_mode_t::space;
+      format_t    format    = format_t::fixed;
+    };
+
+    constexpr formator_t() = default;
+    constexpr formator_t(std::string_view pre, std::string_view post, floating_value_format_t format)
+        : base_t(pre, post, format.min_width, alignment_t::right)
+        , m_fmt(format.format)
+        , m_sign(format.sign)
+        , m_precision(format.precision)
+    {
+    }
+
+    constexpr StringBuilder& append_to(StringBuilder& builder, value_type const& value) const
     {
       char                 buf[50] = {};
       std::to_chars_result res     = { .ptr{ buf }, .ec{} };
 
-      char const sign_fill = this->m_fmt.get_sign() == fmt_t::sign_mode_t::negativ_only ? ' ' : '+';
-      if (T{ 0 } <= this->m_val)
-        *res.ptr++ = sign_fill;
+      if (this->m_sign != sign_mode_t::negativ_only && static_cast<value_type>(0) <= value)
+        *res.ptr++ = this->m_sign == sign_mode_t::both ? '+' : ' ';
 
-      if (this->m_fmt.get_precision() < 0)
-        res = std::to_chars(res.ptr, buf + sizeof(buf), this->m_val, this->m_fmt.get_format());
-      else
-        res = std::to_chars(res.ptr, buf + sizeof(buf), this->m_val, this->m_fmt.get_format(), this->m_fmt.get_precision());
+      res = std::to_chars(res.ptr, buf + sizeof(buf), value, this->m_fmt, this->m_precision);
 
       if (res.ec != std::errc())
         throw std::runtime_error("formatting not possible");
 
-      std::size_t const len  = res.ptr - buf;
-      std::size_t const fill = this->m_fmt.get_width() < 0 ? 0 : len < this->m_fmt.get_width() ? this->m_fmt.get_width() - len : 0;
-
-      builder.append(' ', fill);
-      return builder.append(buf);
+      return base_t::append_to(builder, std::string_view{ buf, static_cast<std::size_t>(res.ptr - buf) });
     }
 
   private:
-    fmt_t    m_fmt;
-    T const& m_val;
+    std::chars_format m_fmt       = std::chars_format::general;
+    sign_mode_t       m_sign      = sign_mode_t::negativ_only;
+    int               m_precision = -1;
   };
 
-  template <std::integral T> class formator_t<T>
+  template <std::integral T> class formator_t<T>: protected formator_t<std::string_view>
   {
-  public:
-    using fmt_t = Internal::integer_number_format_t;
+    using base_t = formator_t<std::string_view>;
 
-    constexpr formator_t(fmt_t fmt, T const& val)
-        : m_fmt{ fmt }
-        , m_val(val)
+  public:
+    using value_type  = std::remove_cvref_t<T>;
+    using sign_mode_t = format::sign_mode_t;
+
+    struct integer_value_format_t
+    {
+      int         min_width = 0;
+      sign_mode_t sign      = sign_mode_t::space;
+      int         base      = 10;
+    };
+
+    constexpr formator_t() = default;
+    constexpr formator_t(std::string_view pre, std::string_view post, integer_value_format_t format)
+        : base_t(pre, post, format.min_width, alignment_t::right)
+        , m_sign(format.sign)
+        , m_base(format.base)
     {
     }
 
-    constexpr StringBuilder<0>& append_to(StringBuilder<0>& builder) const
+    constexpr StringBuilder& append_to(StringBuilder& builder, value_type const& value) const
     {
       char                 buf[50] = {};
       std::to_chars_result res     = { .ptr{ buf }, .ec{} };
 
-      char const sign_fill = this->m_fmt.get_sign() == fmt_t::sign_mode_t::negativ_only ? ' ' : '+';
-      if (T{ 0 } <= this->m_val)
-        *res.ptr++ = sign_fill;
+      if (this->m_sign != sign_mode_t::negativ_only && static_cast<value_type>(0) <= value)
+        *res.ptr++ = this->m_sign == sign_mode_t::both ? '+' : ' ';
 
-      res = std::to_chars(res.ptr, buf + sizeof(buf), this->m_val, this->m_fmt.get_base());
+      res = std::to_chars(res.ptr, buf + sizeof(buf), value, this->m_base);
 
       if (res.ec != std::errc())
         throw std::runtime_error("formatting not possible");
 
-      std::size_t const len  = res.ptr - buf;
-      std::size_t const fill = (this->m_fmt.get_width() < 0) ? 0 : (len < this->m_fmt.get_width()) ? (this->m_fmt.get_width() - len) : 0;
-      builder.append(' ', fill);
-      return builder.append(buf);
+      return base_t::append_to(builder, std::string_view{ buf, static_cast<std::size_t>(res.ptr - buf) });
     }
 
   private:
-    fmt_t    m_fmt;
-    T const& m_val;
+    sign_mode_t m_sign = sign_mode_t::negativ_only;
+    int         m_base = 10;
   };
 
-  template <typename T> constexpr auto fmt(char const* fmt, T const& val) { return formator_t<T>{ { fmt }, val }; }
+  template <typename T> constexpr auto fmt(formator_t<T> const& formator, typename formator_t<T>::value_type const& val)
+  {
+    return std::pair<formator_t<T> const&, typename formator_t<T>::value_type const&>{ formator, val };
+  }
 
-  template <typename T> constexpr StringBuilder<0>& operator<<(StringBuilder<0>& builder, T str) { return builder.append(str); }
-  template <typename T> constexpr StringBuilder<0>& operator<<(StringBuilder<0>& builder, formator_t<T> const& val) { return val.append_to(builder); }
+  constexpr auto fmt(formator_t<std::string_view> const& formator, const char* str)
+  {
+    return std::pair<formator_t<std::string_view> const&, std::string_view>{ formator, std::string_view{ str } };
+  }
+  constexpr auto fmt(formator_t<std::string_view> const& formator, std::string_view const& str)
+  {
+    return std::pair<formator_t<std::string_view> const&, std::string_view const&>{ formator, str };
+  }
+
+  template <typename T> constexpr StringBuilder& operator<<(StringBuilder& builder, T str) { return builder.append(str); }
+
+  constexpr StringBuilder& operator<<(StringBuilder& builder, std::pair<formator_t<std::string_view> const&, std::string_view> const& val)
+  {
+    return val.first.append_to(builder, val.second);
+  }
+  constexpr StringBuilder& operator<<(StringBuilder& builder, std::pair<formator_t<std::string_view> const&, std::string_view const&> const& val)
+  {
+    return val.first.append_to(builder, val.second);
+  }
+
+  template <typename T>
+  constexpr StringBuilder& operator<<(StringBuilder& builder, std::pair<formator_t<T> const&, typename formator_t<T>::value_type const&> const& val)
+  {
+    return val.first.append_to(builder, val.second);
+  }
 
 }    // namespace wlib
 
