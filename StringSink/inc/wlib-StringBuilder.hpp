@@ -143,37 +143,42 @@ namespace wlib
 
     constexpr StringBuilder& append_to(StringBuilder& builder, std::string_view const& value) const
     {
-      std::size_t const fill = value.length() < this->m_width ? this->m_width - value.length() : 0;
-
-      builder.append(this->m_prefix);
+      std::size_t const len  = this->m_prefix.length() + value.length() + this->m_postfix.length();
+      std::size_t const fill = len < this->m_width ? this->m_width - len : 0;
 
       switch (this->m_align)
       {
       case alignment_t::right:
         builder.append(' ', fill);
+        builder.append(this->m_prefix);
         builder.append(value);
+        builder.append(this->m_postfix);
         break;
 
       case alignment_t::center:
         builder.append(' ', fill / 2);
+        builder.append(this->m_prefix);
         builder.append(value);
+        builder.append(this->m_postfix);
         builder.append(' ', fill - fill / 2);
         break;
 
       case alignment_t::left:
       default:
+        builder.append(this->m_prefix);
         builder.append(value);
+        builder.append(this->m_postfix);
         builder.append(' ', fill);
         break;
       }
 
-      return builder.append(this->m_postfix);
+      return builder;
     }
 
   private:
     std::string_view m_prefix  = {};
     std::string_view m_postfix = {};
-    int              m_width   = 0;
+    std::size_t      m_width   = 0;
     alignment_t      m_align   = alignment_t::left;
   };
 
