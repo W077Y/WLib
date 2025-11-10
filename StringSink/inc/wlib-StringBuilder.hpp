@@ -213,7 +213,7 @@ namespace wlib
       char                 buf[50] = {};
       std::to_chars_result res     = { .ptr{ buf }, .ec{} };
 
-      if (this->m_sign != sign_mode_t::negativ_only && static_cast<value_type>(0) <= value)
+      if (this->m_sign != sign_mode_t::negativ_only && static_cast<value_type>(0) < value)
         *res.ptr++ = this->m_sign == sign_mode_t::both ? '+' : ' ';
 
       res = std::to_chars(res.ptr, buf + sizeof(buf), value, this->m_fmt, this->m_precision);
