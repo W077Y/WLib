@@ -9,7 +9,8 @@
 namespace wlib::container
 {
   template <typename T, std::size_t N>
-  requires(N > 0 && std::is_destructible_v<T> && std::is_default_constructible_v<T> && std::is_copy_assignable_v<T>) class circular_buffer_t
+    requires(N > 0 && std::is_destructible_v<T> && std::is_default_constructible_v<T> && std::is_copy_assignable_v<T>)
+  class circular_buffer_t
   {
     using payload_t                                = T;
     static constexpr std::size_t number_of_entries = N;
@@ -84,7 +85,7 @@ namespace wlib::container
     {
       if (this->m_r_idx <= this->m_w_idx)
         return this->m_w_idx - this->m_r_idx;
-      return number_of_entries;
+      return this->m_w_idx + buffer_length - this->m_r_idx;
     }
 
     payload_t const& operator[](std::size_t idx) const noexcept
@@ -98,6 +99,23 @@ namespace wlib::container
     {
       this->m_w_idx = 0;
       this->m_r_idx = 0;
+    }
+
+    void drop_until(std::size_t keep)
+    {
+      if (keep == 0)
+        return this->clear();
+      if (keep >= this->occupied_entries())
+        return;
+
+      if (keep <= this->m_w_idx)
+      {
+        this->m_r_idx = this->m_w_idx - keep;
+      }
+      else
+      {
+        this->m_r_idx = this->m_w_idx + buffer_length - keep;
+      }
     }
 
     auto begin() const -> iterator { return iterator{ *this, 0, this->occupied_entries() }; }
