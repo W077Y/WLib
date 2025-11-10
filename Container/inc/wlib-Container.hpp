@@ -25,8 +25,8 @@ namespace wlib::container
     public:
       using difference_type   = std::ptrdiff_t;
       using value_type        = payload_t;
-      using reference         = const payload_t&;
-      using pointer           = const payload_t*;
+      using reference         = payload_t const&;
+      using pointer           = payload_t const*;
       using iterator_category = std::forward_iterator_tag;
 
       constexpr iterator() noexcept = default;
@@ -37,7 +37,7 @@ namespace wlib::container
       {
       }
 
-      constexpr reference const& operator*() const { return (*this->m_obj)[this->m_idx]; }
+      constexpr reference operator*() const { return (*this->m_obj)[this->m_idx]; }
 
       constexpr iterator& operator++()
       {
@@ -88,7 +88,7 @@ namespace wlib::container
     {
       if (this->m_r_idx <= this->m_w_idx)
         return this->m_w_idx - this->m_r_idx;
-      return number_of_entries;
+      return this->m_w_idx + buffer_length - this->m_r_idx;
     }
 
     payload_t const& operator[](std::size_t idx) const noexcept
@@ -103,6 +103,24 @@ namespace wlib::container
       this->m_w_idx = 0;
       this->m_r_idx = 0;
     }
+
+    void keep_last(std::size_t keep)
+    {
+      if (keep == 0)
+        return this->clear();
+      if (keep >= this->occupied_entries())
+        return;
+
+      if (keep <= this->m_w_idx)
+      {
+        this->m_r_idx = this->m_w_idx - keep;
+      }
+      else
+      {
+        this->m_r_idx = this->m_w_idx + buffer_length - keep;
+      }
+    }
+
 
     auto begin() const -> iterator { return iterator{ *this, 0, this->occupied_entries() }; }
     auto end() const -> sentinel { return sentinel{}; }
